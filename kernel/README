@@ -1,0 +1,8 @@
+Compile vendor's kernel:
+
+git clone https://github.com/raspberrypi/linux --depth=1
+vi ./linux/arch/arm64/configs/bcm2712_defconfig ( change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
+\rm -rf out; mkdir out;
+
+make kernel
+The result is in ./out/boot.img

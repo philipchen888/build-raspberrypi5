@@ -1,0 +1,117 @@
+Build ubuntu-uefi sdcard image for raspberrypi5:
+
+cd ~/Downloads
+wget https://cdimage.ubuntu.com/noble/daily-live/current/noble-desktop-arm64.iso
+wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
+
+cd ~/build-raspberrypi5/ubuntu-uefi
+
+Plugin sdcard to PC.
+sudo ./mkuefiboot.sh
+sudo mkfs.vfat /dev/sda1
+sudo fdisk -l /dev/sda
+sudo mount -t vfat /dev/sda1 /mnt
+cd /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
+cd ~/build-raspberrypi5/ubuntu-uefi
+sync
+sudo umount /mnt
+Eject sdcard from PC.
+
+Plugin USB2 flash drive to PC.
+sudo ./mksdcardimg.sh
+sudo mkfs.vfat /dev/sda1
+sudo fdisk -l /dev/sda
+sudo mount -t vfat /dev/sda1 /mnt
+cd /mnt
+sudo 7z x ~/Downloads/oracular-desktop-arm64.iso
+sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
+cd ~/build-raspberrypi5/ubuntu-uefi
+sync
+sudo umount /mnt
+Eject USB2 flash drive from PC.
+
+------------------------------------------------------------------------
+Install ubuntu from ubuntu iso in USB2 flash drive to sdcard.
+------------------------------------------------------------------------
+
+Plugin sdcard and USB2 flash drive to rpi5. Plugin usb wifi dongle to rpi5. Power on rpi5.
+Select install
+Select alongside another OS and install Ubuntu.
+Contine till finished. Restart.
+
+Remove USB2 flash drive from rpi5.
+Login:
+Username: linaro
+Password: linaro
+Disable power saving and screen saver.
+sudo apt install net-tools openssh-server pulseaudio-utils pavucontrol
+uname -a
+lsb_release -a
+sudo ifconfig
+sudo dpkg-reconfigure tzdata
+sudo dpkg-reconfigure locales
+date
+sudo apt update
+sudo apt upgrade
+sudo apt dist-upgrade
+sync
+sudo shutdown -h now
+Power off, power on
+glxinfo | grep OpenGL
+date
+Check if Ubuntu is running UEFI mode:
+ls /sys/firmware/efi
+Check display mode: ( wayland or x11 )
+echo $XDG_SESSION_TYPE
+Check audio driver: ( pulseaudio or pipewire )
+pactl info
+
+sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc
+
+speedtest-cli --secure
+
+glmark2-es2-wayland
+
+aplay -l
+pavucontrol  ( select card 0 as default )
+
+firefox -> youtube.com -> search YmDNhi07_Ho
+
+git clone https://github.com/yt-dlp/yt-dlp.git
+cd yt-dlp
+make
+cd ../
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan.mp4
+mpv swan.mp4
+
+sudo rfkill list
+hciconfig hci0
+hcitool dev
+hciconfig -a
+
+rpi5 sound, wifi, ethernet and bluetooth are not supported in mainline kernel 6.8.0-50-generic or 6.11.0-9-generic.
+
+----------------------------------------------
+Compile mainline kernel
+----------------------------------------------
+
+sudo apt install make build-essential libncurses-dev bison flex libssl-dev libelf-dev
+wget https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/snapshot/linux-6.13-rc1.tar.gz
+tar -xzf linux-6.13-rc1.tar.gz
+mv linux-6.13-rc1 linux
+cd linux
+sudo make mrproper
+make ARCH=arm64 defconfig
+make ARCH=arm64 all -j8
+sudo make ARCH=arm64 modules_install
+sudo make ARCH=arm64 dtbs_install
+sudo make ARCH=arm64 install
+sudo vi /boot/grub/grub.cfg ( change first menu to:
+linux   /boot/vmlinuz-6.13.0-rc1
+initrd  /boot/initrd.img-6.13.0-rc1
+devicetree /boot/dtbs/6.13.0-rc1/broadcom/bcm2712-rpi-5-b.dtb
+)
+sync
+sudo reboot
+
