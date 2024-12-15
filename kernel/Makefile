@@ -1,6 +1,7 @@
 export KERNEL=kernel8
 export OUT=$(PWD)/out
 export BOOT=$(OUT)/boot.img
+BOOT_UUID=95E46EA5
 export ARCH=arm64
 export CROSS_COMPILE=/usr/local/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
 
@@ -23,7 +24,7 @@ buildkernel:
 postbuildkernel:
 	cd linux; \
 	\rm -f $(BOOT); \
-	mkfs.vfat -n "boot" -S 512 -C ${BOOT} 512000; \
+	mkfs.vfat -n "boot" -i ${BOOT_UUID} -S 512 -C ${BOOT} 512000; \
 	mmd -i ${BOOT} ::/overlays; \
 	mcopy -i ${BOOT} -s ../firmware/fixup4.dat ::; \
 	mcopy -i ${BOOT} -s ../firmware/start4.elf ::; \

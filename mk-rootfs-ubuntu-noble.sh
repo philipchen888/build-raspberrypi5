@@ -19,7 +19,7 @@ if [ ! $VERSION ]; then
 	VERSION="release"
 fi
 
-if [ ! -e binary-tar.tar.gz ]; then
+if [ ! -e live-image-arm64.tar.tar.gz ]; then
 	echo "\033[36m Run sudo lb build first \033[0m"
 fi
 
@@ -33,16 +33,16 @@ finish() {
 trap finish ERR
 
 echo -e "\033[36m Extract image \033[0m"
-sudo tar -xpf binary-tar.tar.gz
+sudo tar -xpf live-image-arm64.tar.tar.gz
 
 sudo cp -rf ../linux/linux/tmp/lib/modules $TARGET_ROOTFS_DIR/lib
 
 # packages folder
 sudo mkdir -p $TARGET_ROOTFS_DIR/packages
 sudo cp -rf ../packages/$ARCH/* $TARGET_ROOTFS_DIR/packages
-sudo cp -rf ../linux/linux/tmp/boot/* $TARGET_ROOTFS_DIR/boot
-sudo cp ../linux/patches/40_custom_uuid $TARGET_ROOTFS_DIR/boot
-sudo cp ../linux/patches/debian/fstab $TARGET_ROOTFS_DIR/boot
+sudo cp -rf ../kernel/linux/tmp/boot/* $TARGET_ROOTFS_DIR/boot
+sudo mkdir -p $TARGET_ROOTFS_DIR/boot/firmware
+sudo cp ../kernel/firmware/fstab $TARGET_ROOTFS_DIR/boot
 
 # overlay folder
 sudo cp -rf ../overlay/* $TARGET_ROOTFS_DIR/
@@ -65,36 +65,11 @@ echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf
 resolvconf -u
 apt-get update
 apt-get upgrade -y
-apt-get install -y build-essential git wget grub-efi-arm64 e2fsprogs zstd
+apt-get install -y build-essential git wget grub-efi-arm64 e2fsprogs zstd inux-image-6.8.0-1010-raspi
 
 # Install and configure GRUB
 cp /boot/fstab /etc/fstab
 rm -rf /boot/fstab
-mkdir -p /boot/efi
-grub-install --target=arm64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
-update-grub
-
-cp /boot/40_custom_uuid /etc/grub.d/
-chmod +x /etc/grub.d/40_custom_uuid
-rm -rf /boot/40_custom_uuid
-
-# Fix mouse lagging issue
-cat << MOUSE_EOF >> /etc/environment
-MUTTER_DEBUG_ENABLE_ATOMIC_KMS=0
-MUTTER_DEBUG_FORCE_KMS_MODE=simple
-CLUTTER_PAINT=disable-dynamic-max-render-time
-MOUSE_EOF
-
-# Migrate extlinux.conf to GRUB
-rm -rf /boot/extlinux
-cat << GRUB_EOF > /etc/default/grub
-GRUB_DEFAULT="Boot from UUID"
-GRUB_TIMEOUT=5
-GRUB_CMDLINE_LINUX_DEFAULT="quiet"
-GRUB_CMDLINE_LINUX=""
-GRUB_EOF
-
-update-grub
 
 chmod o+x /usr/lib/dbus-1.0/dbus-daemon-launch-helper
 chmod +x /etc/rc.local
@@ -104,10 +79,10 @@ cp /packages/rpiwifi/brcmfmac43455-sdio.txt /lib/firmware/brcm/
 apt-get install -f -y
 
 # Create the linaro user account
-/usr/sbin/useradd -d /home/linaro -G adm,sudo,video -m -N -u 29999 linaro
-echo -e "linaro:linaro" | chpasswd
-echo -e "linaro-alip" | tee /etc/hostname
-touch "/var/lib/oem-config/run"
+#/usr/sbin/useradd -d /home/linaro -G adm,sudo,video -m -N -u 29999 linaro
+#echo -e "linaro:linaro" | chpasswd
+#echo -e "linaro-alip" | tee /etc/hostname
+#touch "/var/lib/oem-config/run"
 
 # Enable wayland session
 sed -i 's/#WaylandEnable=false/WaylandEnable=true/g' /etc/gdm3/custom.conf
@@ -115,7 +90,7 @@ sed -i 's/#WaylandEnable=false/WaylandEnable=true/g' /etc/gdm3/custom.conf
 systemctl enable rc-local
 systemctl enable resize-helper
 chsh -s /bin/bash linaro
-update-initramfs -c -k 6.8.0-rc4
+update-initramfs -c -k 6.8.0-1010-raspi
 
 #---------------Clean--------------
 rm -rf /var/lib/apt/lists/*

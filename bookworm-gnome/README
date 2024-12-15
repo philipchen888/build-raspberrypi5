@@ -31,12 +31,11 @@ echo $XDG_SESSION_TYPE
 Check audio driver: ( pulseaudio or pipewire )
 pactl info
 
-sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-x11 glmark2-es2-wayland pandoc firefox-esr
+sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc firefox-esr
 
 speedtest-cli --secure
 
-glmark2-es2-wayland  ( for wayland )
-glmark2-es2          ( for x11 )
+glmark2-es2-wayland
 
 aplay -l
 pavucontrol  ( select card 0 as default )

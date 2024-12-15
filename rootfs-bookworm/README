@@ -1,5 +1,7 @@
 Compile rootfs:
 
+wget https://archive.raspberrypi.org/debian/raspberrypi.gpg.key
+
 make rootfs
 
 The result is in ./linaro-rootfs.img

@@ -63,6 +63,9 @@ cat << EOF | sudo chroot $TARGET_ROOTFS_DIR
 rm -rf /etc/resolv.conf
 echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf
 resolvconf -u
+wget https://archive.raspberrypi.org/debian/raspberrypi.gpg.key -O - | apt-key add -
+mv /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d
+echo -e "deb http://archive.raspberrypi.org/debian bookworm main" >> /etc/apt/sources.list
 apt-get update
 apt-get upgrade -y
 apt-get install -y build-essential git wget
@@ -76,6 +79,9 @@ chmod +x /etc/rc.local
 dpkg -i /packages/rpiwifi/firmware-brcm80211_20240909-2_all.deb
 cp /packages/rpiwifi/brcmfmac43455-sdio.txt /lib/firmware/brcm/
 apt-get install -f -y
+
+# Turn off speech dispatcher
+apt remove orca -y
 
 systemctl enable rc-local
 systemctl enable resize-helper
