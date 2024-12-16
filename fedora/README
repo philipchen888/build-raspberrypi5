@@ -1,7 +1,23 @@
 Build fedora sdcard image for raspberrypi5:
 
 see https://docs.fedoraproject.org/en-US/quick-docs/raspberry-pi/#_installing_fedora_on_a_raspberry_pi_for_linux_users
-wget https://mirror.umd.edu/fedora/linux/releases/39/Workstation/aarch64/images/Fedora-Workstation-39-1.5.aarch64.raw.xz
+
+cd ~/Downloads
+wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
+wget https://mirror.umd.edu/fedora/linux/releases/41/Workstation/aarch64/images/Fedora-Workstation-41-1.4.aarch64.raw.xz
+
+cd ~/build-raspberrypi5/fedora
+Plugin sdcard to PC.
+sudo ./mkuefiboot.sh
+sudo mkfs.vfat /dev/sda1
+sudo fdisk -l /dev/sda
+sudo mount -t vfat /dev/sda1 /mnt
+cd /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
+cd ~/build-raspberrypi5/fedora
+sync
+sudo umount /mnt
+Eject sdcard from PC.
 
 Plugin USB2 sata ssd to PC.
 cd ~/build-raspberrypi5/fedora
@@ -10,16 +26,34 @@ sudo mkfs.vfat /dev/sda1
 sudo mkfs.ext4 /dev/sda2
 sudo mkfs.ext4 /dev/sda3
 sudo fdisk -l /dev/sda
-xzcat Fedora-Workstation-39-1.5.aarch64.raw.xz | sudo dd status=progress bs=4096 of=/dev/sda skip=256 seek=256 conv=notrunc,fsync 
+xzcat ~/Downloads/Fedora-Workstation-41-1.4.aarch64.raw.xz | sudo dd status=progress bs=4096 of=/dev/sda skip=256 seek=256 conv=notrunc,fsync 
+sudo mount /dev/sda1 /mnt
+sudo vi /mnt/config.txt ( add 
+usb_max_current_enable=1
+)
+sync
+sudo umount /mnt
 Unplug USB2 sata ssd from PC.
 
-Plugin USB2 sata ssd to rpi5. Power on rpi5.
+Plugin sdcard and USB2 sata ssd to rpi5. Plugin wifi usb dongle to rpi5. Power on rpi5.
 
 Disable power saving and screen saver.
 sudo dnf update --exclude=kernel*
+sync
 sudo reboot
 
+date
+Check display mode: ( wayland or x11 )
+echo $XDG_SESSION_TYPE
+Check audio driver: ( pulseaudio or pipewire )
+pactl info
+
 glmark2-es2-wayland
+
+aplay -l
+pavucontrol  ( select card 0 as default )
+
+firefox -> youtube.com -> search YmDNhi07_Ho
 
 sudo dnf install yt-dlp mpv rfkill speedtest-cli
 speedtest-cli
@@ -30,3 +64,5 @@ sudo rfkill list
 hciconfig hci0
 hcitool dev
 hciconfig -a
+
+mainline kernel 6.11.4-301.fc41.aarch64 cannot support rpi5 sound, wifi, ethernet and bluetooth.
