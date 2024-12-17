@@ -35,36 +35,46 @@ Steps to build raspberrypi5 sdcard image:
    make kernel
    The result is in ./out/boot.img
 
-4. cd ~/build-raspberrypi5/rootfs-bookworm  ( Compile debian bookworm rootfs )
+4. cd ~/build-raspberrypi5/linux  ( Compile mainline kernel )
+   wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.5.tar.xz
+   unxz linux-6.12.5.tar.xz
+   tar -xvf linux-6.12.5.tar
+   mv linux-6.12.5 linux
+   \rm -rf out; mkdir out;
+   make kernel
+
+   The result is in ./out/boot.img
+
+5. cd ~/build-raspberrypi5/rootfs-bookworm  ( Compile debian bookworm rootfs )
    make rootfs
    The result is in ./linaro-rootfs.img
    make clean
 
-5. cd ~/build-raspberrypi5/rootfs-ubuntu-noble  ( Compile ubuntu-noble rootfs )
+6. cd ~/build-raspberrypi5/rootfs-ubuntu-noble  ( Compile ubuntu-noble rootfs )
    make rootfs
    The result is in ./linaro-rootfs.img
    make clean
 
-6. cd ~/build-raspberrypi5/rootfs-ubuntu-oracular  ( Compile ubuntu-oracular rootfs )
+7. cd ~/build-raspberrypi5/rootfs-ubuntu-oracular  ( Compile ubuntu-oracular rootfs )
    make rootfs
    The result is in ./linaro-rootfs.img
    make clean
 
-7. cd ~/build-raspberrypi5/bookworm-gnome  ( Build debian bookworm gnome-desktop image )
+8. cd ~/build-raspberrypi5/bookworm-gnome  ( Build debian bookworm gnome-desktop image )
    Plugin sdcard/USB2-SATA-SSD to PC.
    sudo ./mksdcardimg.sh
    Eject sdcard/USB2-SATA-SSD from PC.
 
-8. cd ~/build-raspberrypi5/ubuntu-noble  ( Build ubuntu-noble image )
+9. cd ~/build-raspberrypi5/ubuntu-noble    ( Build ubuntu-noble image )
    Plugin sdcard/USB2-SATA-SSD to PC.
    sudo ./mksdcardimg.sh
    Eject sdcard/USB2-SATA-SSD from PC.
 
-9. cd ~/build-raspberrypi5/ubuntu-oracular  ( Build ubuntu-oracular image )
-   Plugin sdcard/USB2-SATA-SSD to PC.
-   sudo ./mksdcardimg.sh
-   Eject sdcard/USB2-SATA-SSD from PC.
+10. cd ~/build-raspberrypi5/ubuntu-oracular  ( Build ubuntu-oracular image )
+    Plugin sdcard/USB2-SATA-SSD to PC.
+    sudo ./mksdcardimg.sh
+    Eject sdcard/USB2-SATA-SSD from PC.
 
-10. cd ~/build-raspberrypi5/fedora          ( Build fedora image )
+11. cd ~/build-raspberrypi5/fedora           ( Build fedora image )
 
-11. cd ~/build-raspberrypi5/ubuntu-uefi     ( Build ubuntu-uefi image )
+12. cd ~/build-raspberrypi5/ubuntu-uefi      ( Build ubuntu-uefi image )
