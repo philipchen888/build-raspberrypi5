@@ -15,6 +15,8 @@ sudo mount -t vfat /dev/sda1 /mnt
 cd /mnt
 sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
 cd ~/build-raspberrypi5/ubuntu-uefi
+sudo cp -r ./firmware /mnt
+ls -la /mnt
 sync
 sudo umount /mnt
 Eject sdcard from PC.
@@ -48,7 +50,6 @@ Username: linaro
 Password: linaro
 Disable power saving and screen saver.
 sudo apt install net-tools openssh-server pulseaudio-utils
-sudo apt remove initramfs-tools
 uname -a
 lsb_release -a
 sudo ifconfig
@@ -94,3 +95,47 @@ hcitool dev
 hciconfig -a
 
 rpi5 sound, wifi, ethernet and bluetooth are not supported in mainline kernel 6.8.0-50-generic or 6.11.0-9-generic.
+
+-------------------------------------------------------------
+Compile vendor's kernel. 
+Change from uefi to bootcode.bin
+-------------------------------------------------------------
+
+sudo apt install build-essential libncurses-dev bison flex libssl-dev libelf-dev fakeroot git
+git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.6.y --tag stable_20241120
+mv stable_20241120 linux
+vi ./linux/arch/arm64/configs/bcm2712_defconfig ( change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
+
+cd linux
+make kernelversion
+KERNEL=kernel_2712
+sudo make mrproper
+make ARCH=arm64 bcm2712_defconfig
+make ARCH=arm64 all -j8
+sudo mkdir -p /boot/firmware
+sudo vi /etc/fstab ( change efi to firmware )
+sudo mount -a
+sudo systemctl daemon-reload
+ls -la /boot/firmware
+sudo make ARCH=arm64 modules_install
+sudo make ARCH=arm64 dtbs_install
+sudo make ARCH=arm64 install
+sudo mkdir -p /boot/firmware/save
+sudo mv /boot/firmware/EFI /boot/firmware/save
+sudo mv /boot/firmware/RPI_EFI.fd /boot/firmware/save
+sudo mv /boot/firmware/config.txt /boot/firmware/save
+sudo mv /boot/firmware/bcm2712-rpi-5-b.dtb /boot/firmware/save
+sudo cp /boot/vmlinux-6.6.66-v8-16k+ /boot/firmware/kernel_2712.img
+sudo cp /boot/initrd.img-6.6.66-v8-16k+  /boot/firmware/initramfs_2712
+sudo cp /boot/dtbs/6.6.66-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb /boot/firmware/
+sudo mkdir -p /boot/firmware/overlays
+sudo cp /boot/dtbs/6.6.66-v8-16k+/overlays/*.dtb* /boot/firmware/overlays/
+sudo cp /boot/firmware/firmware/* /boot/firmware  ( make sure cmdline.txt UUID is correct )
+lsblk
+blkid /dev/mmcblk1p2
+sudo vi /boot/firmware/cmdline.txt
+sudo apt remove initramfs-tools
+sync
+sudo reboot
+
+Remove wifi dongle and plugin ethernet cable to rpi5. Power on rpi5.
