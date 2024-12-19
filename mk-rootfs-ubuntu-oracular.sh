@@ -19,7 +19,7 @@ if [ ! $VERSION ]; then
 	VERSION="release"
 fi
 
-if [ ! -e live-image-arm64.tar.tar.gz ]; then
+if [ ! -e binary-tar.tar.gz ]; then
 	echo "\033[36m Run sudo lb build first \033[0m"
 fi
 
@@ -33,9 +33,9 @@ finish() {
 trap finish ERR
 
 echo -e "\033[36m Extract image \033[0m"
-sudo tar -xpf live-image-arm64.tar.tar.gz
+sudo tar -xpf binary-tar.tar.gz
 
-sudo cp -rf ../linux/linux/tmp/lib/modules $TARGET_ROOTFS_DIR/lib
+sudo cp -rf ../kernel/linux/tmp/lib/modules $TARGET_ROOTFS_DIR/lib
 
 # packages folder
 sudo mkdir -p $TARGET_ROOTFS_DIR/packages
@@ -65,7 +65,7 @@ echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf
 resolvconf -u
 apt-get update
 apt-get upgrade -y
-apt-get install -y build-essential git wget grub-efi-arm64 e2fsprogs zstd linux-image-6.11.0-1004-raspi
+apt-get install -y build-essential git wget grub-efi-arm64 e2fsprogs zstd
 
 # Install and configure GRUB
 cp /boot/fstab /etc/fstab
@@ -79,10 +79,10 @@ cp /packages/rpiwifi/brcmfmac43455-sdio.txt /lib/firmware/brcm/
 apt-get install -f -y
 
 # Create the linaro user account
-#/usr/sbin/useradd -d /home/linaro -G adm,sudo,video -m -N -u 29999 linaro
-#echo -e "linaro:linaro" | chpasswd
-#echo -e "linaro-alip" | tee /etc/hostname
-#touch "/var/lib/oem-config/run"
+/usr/sbin/useradd -d /home/linaro -G adm,sudo,video -m -N -u 29999 linaro
+echo -e "linaro:linaro" | chpasswd
+echo -e "linaro-alip" | tee /etc/hostname
+touch "/var/lib/oem-config/run"
 
 # Enable wayland session
 sed -i 's/#WaylandEnable=false/WaylandEnable=true/g' /etc/gdm3/custom.conf
@@ -90,7 +90,6 @@ sed -i 's/#WaylandEnable=false/WaylandEnable=true/g' /etc/gdm3/custom.conf
 systemctl enable rc-local
 systemctl enable resize-helper
 chsh -s /bin/bash linaro
-update-initramfs -c -k 6.11.0-1004-raspi
 
 #---------------Clean--------------
 rm -rf /var/lib/apt/lists/*

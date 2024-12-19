@@ -1,4 +1,4 @@
-export LB_BOOTSTRAP_INCLUDE="apt-transport-https gnup"
+export LB_BOOTSTRAP_INCLUDE="apt-transport-https"
 export ARCH=arm64
 export CROSS_COMPILE=/usr/local/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
 
@@ -23,13 +23,11 @@ prebuild:
 	--backports false \
 	--binary-filesystem ext4 \
 	--binary-images tar \
-	--bootappend-live "hostname=linaro-alip username=linaro" \
 	--bootstrap-qemu-arch arm64 \
 	--bootstrap-qemu-static /usr/bin/qemu-aarch64-static \
 	--cache false \
 	--chroot-filesystem none \
 	--compression gzip \
-	--debootstrap-options "--variant=minbase --include=apt-transport-https,gnupg" \
 	--distribution noble \
 	--gzip-options '-9 --rsyncable' \
 	--keyring-packages ubuntu-keyring \

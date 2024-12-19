@@ -6,15 +6,6 @@ Input files: ../kernel/out/boot.img
 Plugin sdcard/USB2-SATA-SSD to PC.
 sudo ./mksdcardimg.sh
 Eject sdcard/USB2-SATA-SSD from PC.
-Plugin sdcard/USB2-SATA-SSD to PC again
-sudo mount /dev/sda1 /mnt
-sudo cp /media/$USER/rootfs/boot/initrd.img-6.11.0-1004-raspi /mnt/initramfs_2712
-sudo cp /media/$USER/rootfs/boot/vmlinuz-6.11.0-1004-raspi /mnt/kernel_2712.img
-sudo vi /mnt/config.txt ( add usb_max_current_enable=1 )
-sync
-sudo umount /mnt
-sudo umount /media/$USER/rootfs
-Eject sdcard/USB2-SATA-SSD from PC.
 
 Plugin sdcard/USB2-SATA-SSD to rpi5.
 Login:

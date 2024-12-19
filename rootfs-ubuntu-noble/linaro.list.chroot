@@ -37,7 +37,7 @@ hardinfo
 hostapd
 idlestat
 ifupdown
-initramfs-tools
+#initramfs-tools
 input-utils
 iotop
 iperf

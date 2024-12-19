@@ -29,7 +29,6 @@ sudo mount -t vfat /dev/sda1 /mnt
 cd /mnt
 sudo 7z x ~/Downloads/noble-desktop-arm64.iso   ( ubuntu-24.10-desktop-arm64.iso )
 sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-sudo vi config.txt ( add usb_max_current_enable=1 )
 cd ~/build-raspberrypi5/ubuntu-uefi
 sync
 sudo umount /mnt
@@ -71,7 +70,7 @@ echo $XDG_SESSION_TYPE
 Check audio driver: ( pulseaudio or pipewire )
 pactl info
 
-sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc pavucontrol
+sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc pavucontrol git
 
 speedtest-cli --secure
 
@@ -101,14 +100,13 @@ Compile vendor's kernel.
 Change from uefi to bootcode.bin
 -------------------------------------------------------------
 
-sudo apt install build-essential libncurses-dev bison flex libssl-dev libelf-dev fakeroot git
+sudo apt install build-essential libncurses-dev bison flex libssl-dev libelf-dev fakeroot
 git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.6.y --tag stable_20241120
 mv stable_20241120 linux
 vi ./linux/arch/arm64/configs/bcm2712_defconfig ( change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
 
 cd linux
 make kernelversion
-KERNEL=kernel_2712
 sudo make mrproper
 make ARCH=arm64 bcm2712_defconfig
 make ARCH=arm64 all -j8
@@ -117,25 +115,40 @@ sudo vi /etc/fstab ( change efi to firmware )
 sudo mount -a
 sudo systemctl daemon-reload
 ls -la /boot/firmware
+sudo \rm -rf /boot/firmware/EFI
+sudo \rm /boot/firmware/RPI_EFI.fd
 sudo make ARCH=arm64 modules_install
 sudo make ARCH=arm64 dtbs_install
 sudo make ARCH=arm64 install
-sudo mkdir -p /boot/firmware/save
-sudo mv /boot/firmware/EFI /boot/firmware/save
-sudo mv /boot/firmware/RPI_EFI.fd /boot/firmware/save
-sudo mv /boot/firmware/config.txt /boot/firmware/save
-sudo mv /boot/firmware/bcm2712-rpi-5-b.dtb /boot/firmware/save
-sudo cp /boot/vmlinux-6.6.66-v8-16k+ /boot/firmware/kernel_2712.img
+sudo cp /boot/vmlinuz-6.6.66-v8-16k+ /boot/firmware/kernel_2712.img
 sudo cp /boot/initrd.img-6.6.66-v8-16k+  /boot/firmware/initramfs_2712
 sudo cp /boot/dtbs/6.6.66-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb /boot/firmware/
 sudo mkdir -p /boot/firmware/overlays
 sudo cp /boot/dtbs/6.6.66-v8-16k+/overlays/*.dtb* /boot/firmware/overlays/
-sudo cp /boot/firmware/firmware/* /boot/firmware  ( make sure cmdline.txt UUID is correct )
+sudo cp /boot/firmware/firmware/* /boot/firmware
 lsblk
-blkid /dev/mmcblk1p2
-sudo vi /boot/firmware/cmdline.txt
+blkid /dev/mmcblk0p2
+sudo vi /boot/firmware/cmdline.txt  ( make sure cmdline.txt UUID is correct )
 sudo apt remove initramfs-tools
+wget http://http.us.debian.org/debian/pool/non-free-firmware/f/firmware-nonfree/firmware-brcm80211_20240909-2_all.deb
+sudo dpkg -i firmware-brcm80211_20240909-2_all.deb
 sync
-sudo reboot
+sudo shutdown -h now
 
-Remove wifi dongle and plugin ethernet cable to rpi5. Power on rpi5.
+Remove wifi dongle from rpi5. Power on rpi5.
+
+speedtest-cli --secure
+
+glmark2-es2-wayland
+
+aplay -l
+pavucontrol  ( select card 0 as default )
+
+firefox -> youtube.com -> search YmDNhi07_Ho
+
+mpv swan.mp4
+
+sudo rfkill list
+hciconfig hci0
+hcitool dev
+hciconfig -a

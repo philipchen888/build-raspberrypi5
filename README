@@ -4,9 +4,14 @@ Parts needed:
 1. Raspberry pi 5.
 2. Sandisk 64GB SATA SSD with USB cable.
 3. Sandisk 64GB micro sdcard.
-4. Host PC with ubuntu 22.
+4. Host PC with ubuntu 24.
 
-Note: If keyboard/mouse USB dongle interfere with USB SATA SSD, put keyboard/mouse USB dongle in USB3 socket with USB extension cord.
+Note: It looks like mainline kernel and uefi is not fully support rpi5 GPU yet. 
+      Uefi boot requires universal mainline kernel without special config.txt and overlay.
+      So stick with verdor kernel, config.txt, overlay and bootcode.bin for now. 
+      When mainline kernel fully support rpi5 GPU then we can use uefi boot instead of config.txt, overlay and bootcode.bin.
+
+Note: If keyboard/mouse USB dongle interfere with USB SATA SSD, put keyboard/mouse USB dongle in USB2 socket with USB extension cord.
 
 Steps to build raspberrypi5 sdcard image:
 
@@ -20,11 +25,18 @@ Steps to build raspberrypi5 sdcard image:
 
    sudo apt-get install debootstrap debhelper kpartx gdisk devscripts dh-systemd isolinux po4a
 
+   For debian:
    wget https://launchpad.net/debian/+archive/primary/+sourcefiles/live-build/1:20230502/live-build_20230502.tar.xz
    tar xvf live-build_20230502.tar.xz
    cd live-build
    vi Makefile ( search Installing manpages, delete from after done before uninstall: )
    sudo make install
+   lb --version ( 20230502 )
+
+   For ubuntu-noble and ubuntu-oracular
+   wget http://security.ubuntu.com/ubuntu/pool/main/l/live-build/live-build_3.0~a57-1ubuntu41.22.04.1_all.deb
+   sudo dpkg -i live-build_3.0~a57-1ubuntu41.22.04.1_all.deb
+   lb --version ( 3.0~a57-1 /usr/bin/lb )
 
 3. cd ~/build-raspberrypi5/kernel ( Compile vendor's kernel )
    git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.6.y --tag stable_20241120
@@ -35,11 +47,10 @@ Steps to build raspberrypi5 sdcard image:
    make kernel
    The result is in ./out/boot.img
 
-4. cd ~/build-raspberrypi5/linux  ( Compile mainline kernel )
-   wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.5.tar.xz
-   unxz linux-6.12.5.tar.xz
-   tar -xvf linux-6.12.5.tar
-   mv linux-6.12.5 linux
+4. cd ~/build-raspberrypi5/linux  ( Compile mainline kernel, still cannot boot rpi5 )
+   wget https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/snapshot/linux-6.13-rc3.tar.gz
+   tar -xzf linux-6.13-rc3.tar.gz
+   mv linux-6.13-rc3 linux
    \rm -rf out; mkdir out;
    make kernel
 
