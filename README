@@ -16,14 +16,12 @@ Note: If keyboard/mouse USB dongle interfere with USB SATA SSD, put keyboard/mou
 Steps to build raspberrypi5 sdcard image:
 
 1. git clone https://github.com/philipchen888/build-raspberrypi5.git
-   sudo apt-get install build-essential git libssl-dev nmap net-tools libncurses5-dev libncursesw5-dev dnsutils vsftpd ftp binfmt-support qemu-user-static scons libncurses5-dev libncursesw5-dev libdbus-glib-1-dev libbluetooth-dev python-setuptools python3-dev python3-pip python3-setuptools libcurl4-openssl-dev gettext dbus-x11 chrpath diffstat gawk texinfo curl flex bison device-tree-compiler swig libmpc-dev debootstrap debhelper kpartx gdisk devscripts isolinux po4a libgnutls28-dev mtools python-is-python3
-   pip install pyelftools
+   sudo apt update
+   sudo apt upgrade
+   sudo apt-get install build-essential git libssl-dev nmap net-tools libncurses5-dev libncursesw5-dev dnsutils vsftpd ftp binfmt-support qemu-user-static scons libncurses5-dev libncursesw5-dev libdbus-glib-1-dev libbluetooth-dev python3-dev python3-pip python3-setuptools libcurl4-openssl-dev gettext dbus-x11 chrpath diffstat gawk texinfo curl flex bison device-tree-compiler swig libmpc-dev debootstrap debhelper kpartx gdisk devscripts isolinux po4a libgnutls28-dev mtools python-is-python3 python3-pyelftools gcc-aarch64-linux-gnu
 
-2. Install cross compiler and live-build:
-   wget https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz
-   sudo tar -xJf arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz -C /usr/local/
-
-   sudo apt-get install debootstrap debhelper kpartx gdisk devscripts dh-systemd isolinux po4a
+2. Install live-build:
+   sudo apt-get install debootstrap debhelper kpartx gdisk devscripts isolinux po4a
 
    For debian:
    wget https://launchpad.net/debian/+archive/primary/+sourcefiles/live-build/1:20230502/live-build_20230502.tar.xz

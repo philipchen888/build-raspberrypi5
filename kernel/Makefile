@@ -3,7 +3,7 @@ export OUT=$(PWD)/out
 export BOOT=$(OUT)/boot.img
 BOOT_UUID=95E46EA5
 export ARCH=arm64
-export CROSS_COMPILE=/usr/local/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+export CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
 
 clean:
 	cd linux; \
