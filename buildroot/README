@@ -1,0 +1,47 @@
+Build buildroot sdcard image for raspberrypi5:
+
+wget https://buildroot.org/downloads/buildroot-2024.11.tar.gz
+tar -xzf buildroot-2024.11.tar.gz
+mv buildroot-2024.11 buildroot
+cp ./patches/raspberrypi5_defconfig ./buildroot/configs
+cp ./patches/raspberrypi5/* ./buildroot/board/raspberrypi5/
+cd buildroot
+\rm .config
+make clean
+make raspberrypi5_defconfig
+make
+
+The result is in ./output/images/sdcard.img
+
+sudo dd if=./output/images/sdcard.img of=/dev/sda bs=4096 conv=notrunc,fsync
+
+sudo mount /dev/sda2 /mnt
+sudo vi /mnt/etc/network/interfaces ( delete everything after iface lo inet loopback )
+sudo vi /mnt/etc/vsftpd.conf ( anonymous_enable=NO, local_enable=YES, write_enable=YES )
+sync
+sudo umount /mnt
+Eject sdcard.
+
+plugin sdcard to SBC
+login:
+username: root
+password: linaro
+
+ifconfig wlan0 up
+wpa_passphrase your_SSID your_passphrase > /etc/ssid.conf
+wpa_supplicant -B -i wlan0 -c /etc/ssid.conf
+dhcpcd wlan0
+ifconfig
+
+adduser linaro
+
+date
+aplay -l
+
+aplay /home/linaro/yoursong.wav
+mpg123 -a hw:0,0 /home/linaro/yoursong.mp3
+mpv --no-video /home/linaro/yoursong.mp3
+
+hciconfig hci0 up
+hciconfig -a
+hcitool dev

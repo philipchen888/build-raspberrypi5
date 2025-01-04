@@ -1,4 +1,4 @@
-Compile mainline kernel:
+Compile mainline kernel:  ( mainline kernel is not ready for rpi5 yet )
 
 wget https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/snapshot/linux-6.13-rc3.tar.gz
 tar -xzf linux-6.13-rc3.tar.gz
