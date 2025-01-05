@@ -98,4 +98,6 @@ Steps to build raspberrypi5 sdcard image:
 
 14. cd ~/build-raspberrypi5/ubuntu-uefi      ( Build ubuntu-uefi image )
 
-15. cd ~/build-raspberrypi5/yocto            ( Buils yocto image )
+15. cd ~/build-raspberrypi5/yocto            ( Build yocto image )
+
+16. cd ~/build-raspberrypi5/buildroot        ( Build buildroot image )
