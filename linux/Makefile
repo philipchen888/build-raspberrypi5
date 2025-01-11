@@ -14,7 +14,7 @@ buildkernel:
 	cd linux; \
 	sudo \rm -rf tmp; mkdir tmp; mkdir -p tmp/lib; \
 	sudo make mrproper; \
-	make defconfig; \
+	make bcm2712_defconfig; \
 	make all -j8; \
 	sudo make ARCH=arm64 INSTALL_MOD_PATH=./tmp modules_install; \
 	sudo make ARCH=arm64 INSTALL_DTBS_PATH=./tmp/boot/dtb dtbs_install; \

@@ -37,8 +37,7 @@ Steps to build raspberrypi5 sdcard image:
    lb --version ( 3.0~a57-1 /usr/bin/lb )
 
 3. cd ~/build-raspberrypi5/kernel ( Compile vendor's kernel )
-   git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.6.y --tag stable_20241120
-   mv stable_20241120 linux
+   git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.13.y
    vi ./linux/arch/arm64/configs/bcm2712_defconfig ( change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
    \rm -rf out; mkdir out; 
 
@@ -46,9 +45,11 @@ Steps to build raspberrypi5 sdcard image:
    The result is in ./out/boot.img
 
 4. cd ~/build-raspberrypi5/linux  ( Compile mainline kernel, still cannot boot rpi5 )
-   wget https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/snapshot/linux-6.13-rc3.tar.gz
-   tar -xzf linux-6.13-rc3.tar.gz
-   mv linux-6.13-rc3 linux
+   wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.9.tar.xz
+   unxz linux-6.12.9.tar.xz
+   tar -xvf linux-6.12.9.tar
+   mv linux-6.12.9 linux
+   cp ../kernel/linux/arch/arm64/configs/bcm2712_defconfig ./linux/arch/arm64/configs
    \rm -rf out; mkdir out;
    make kernel
 
@@ -101,3 +102,5 @@ Steps to build raspberrypi5 sdcard image:
 15. cd ~/build-raspberrypi5/yocto            ( Build yocto image )
 
 16. cd ~/build-raspberrypi5/buildroot        ( Build buildroot image )
+
+17. cd ~/build-raspberrypi5/bookworm-flightaware  ( Build flightaware image )
