@@ -14,6 +14,9 @@ Build yocto sdcard image for raspberrypi5:
    cd poky; source oe-init-build-env;
    bitbake -s
    bitbake -c cleansstate core-image-weston
+   bitbake -k core-image-weston --runall fetch
+   bitbake -k core-image-weston --runall unpack
+   bitbake -k icu binutils gcc gcc-cross-aarch64 perl perl-native linux-raspberrypi
    bitbake -k core-image-weston
 
    The result is in ./tmp/deploy/images/raspberrypi5/core-image-weston-raspberrypi5.rootfs.wic.bz2
@@ -47,10 +50,16 @@ Build yocto sdcard image for raspberrypi5:
    )
    sudo vi /mnt/etc/xdg/weston/weston.ini ( add
    [core]
+   xwayland=true
    idle-time=0
+
+   [libinput]
+   enable_tap=true
 
    [shell]
    locking=false
+   cursor-theme=Adwaita
+   cursor-size=16
    )
    sync
    sudo umount /mnt
