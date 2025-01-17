@@ -104,3 +104,5 @@ Steps to build raspberrypi5 sdcard image:
 16. cd ~/build-raspberrypi5/buildroot        ( Build buildroot image )
 
 17. cd ~/build-raspberrypi5/bookworm-flightaware  ( Build flightaware image )
+
+18. cd ~/build-raspberrypi5/bookworm-gpio    ( Build gpio and pn532nfc image )
