@@ -1,10 +1,10 @@
 Build bookworm-gnome sdcard for raspberrypi5:
 
-Input files: ../kernel/out/boot.img
+Input files: ../uboot/out/boot.img  bootusb.img
              ../rootfs-bookworm/linaro-rootfs.img
 
 Plugin sdcard/USB2-SATA-SSD to PC.
-sudo ./mksdcardimg.sh
+sudo ./mksdcardimg.sh    ( sudo ./mkusbimg.sh for USB2-SATA-SSD )
 Eject sdcard/USB2-SATA-SSD from PC.
 
 Plugin sdcard/USB2-SATA-SSD to rpi5.

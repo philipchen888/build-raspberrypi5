@@ -5,7 +5,7 @@ Parts required:
 2. Band-Pass SMA Filter.
 3. ADS-B 1090MHz PRO USB Stick.
 
-Input files: ../kernel/out/boot.img
+Input files: ../uboot/out/boot.img
              ../rootfs-bookworm/linaro-rootfs.img
 
 Plugin sdcard to PC.

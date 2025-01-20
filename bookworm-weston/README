@@ -1,10 +1,10 @@
 Build bookworm-weston sdcard for raspberrypi5:
 
-Input files: ../kernel/out/boot.img
+Input files: ../uboot/out/boot.img  bootusb.img
              ../rootfs-weston/linaro-rootfs.img
 
 Plugin sdcard/USB2-SATA-SSD to PC.
-sudo ./mksdcardimg.sh
+sudo ./mksdcardimg.sh    ( sudo ./mkusbimg.sh for USB2-SATA-SSD )
 sudo mount /dev/sda2 /mnt
 mkdir -p /mnt/home/linaro/.config
 vi /mnt/home/linaro/.config/weston.ini ( add

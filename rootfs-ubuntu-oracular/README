@@ -2,6 +2,6 @@ Compile rootfs:
 
 make rootfs
 
-The results are in ./linaro-rootfs.img  linaro-esp.img
+The result is in ./linaro-rootfs.img
 
 make clean

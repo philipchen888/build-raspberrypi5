@@ -11,7 +11,10 @@ Note: It looks like mainline kernel and uefi is not fully support rpi5 GPU yet.
       So stick with verdor kernel, config.txt, overlay and bootcode.bin for now. 
       When mainline kernel fully support rpi5 GPU then we can use uefi boot instead of config.txt, overlay and bootcode.bin.
 
-Note: If keyboard/mouse USB dongle interfere with USB SATA SSD, put keyboard/mouse USB dongle in USB2 socket with USB extension cord.
+Note: If keyboard/mouse USB dongle interfere with USB2-SATA-SSD, put keyboard/mouse USB dongle in USB2 socket with USB extension cord.
+
+Note: uboot still cannot boot from USB2-SATA-SSD. uboot can only boot from sdcard now.
+      Boot sdcard using uboot. Boot USB2-SATA-SSD using bootcode.bin.
 
 Steps to build raspberrypi5 sdcard image:
 
@@ -36,7 +39,17 @@ Steps to build raspberrypi5 sdcard image:
    sudo dpkg -i live-build_3.0~a57-1ubuntu41.22.04.1_all.deb
    lb --version ( 3.0~a57-1 /usr/bin/lb )
 
-3. cd ~/build-raspberrypi5/kernel ( Compile vendor's kernel )
+3. cd ~/build-raspberrypi5/uboot  ( Compile mainline u-boot )
+   git clone --depth=1 -b master https://github.com/raspberrypi/firmware.git
+   git clone --depth=1 -b master https://source.denx.de/u-boot/u-boot.git
+   \rm -rf out; mkdir out;
+
+   make u-boot
+   The result is in ./u-boot/u-boot.bin
+   make boot
+   The result are in ./out/boot.img bootusb.img
+
+4. cd ~/build-raspberrypi5/kernel ( Compile vendor's kernel )
    git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.13.y
    vi ./linux/arch/arm64/configs/bcm2712_defconfig ( change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
    \rm -rf out; mkdir out; 
@@ -44,7 +57,7 @@ Steps to build raspberrypi5 sdcard image:
    make kernel
    The result is in ./out/boot.img
 
-4. cd ~/build-raspberrypi5/linux  ( Compile mainline kernel, still cannot boot rpi5 )
+5. cd ~/build-raspberrypi5/linux  ( Compile mainline kernel, still cannot boot rpi5 )
    wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.9.tar.xz
    unxz linux-6.12.9.tar.xz
    tar -xvf linux-6.12.9.tar
@@ -55,54 +68,54 @@ Steps to build raspberrypi5 sdcard image:
 
    The result is in ./out/boot.img
 
-5. cd ~/build-raspberrypi5/rootfs-bookworm  ( Compile debian bookworm rootfs )
+6. cd ~/build-raspberrypi5/rootfs-bookworm  ( Compile debian bookworm rootfs )
    make rootfs
    The result is in ./linaro-rootfs.img
    make clean
 
-6. cd ~/build-raspberrypi5/rootfs-weston    ( Compile debian bookworm weston rootfs )
+7. cd ~/build-raspberrypi5/rootfs-weston    ( Compile debian bookworm weston rootfs )
    make rootfs
    The result is in ./linaro-rootfs.img
    make clean
 
-7. cd ~/build-raspberrypi5/rootfs-ubuntu-noble  ( Compile ubuntu-noble rootfs )
+8. cd ~/build-raspberrypi5/rootfs-ubuntu-noble  ( Compile ubuntu-noble rootfs )
    make rootfs
    The result is in ./linaro-rootfs.img
    make clean
 
-8. cd ~/build-raspberrypi5/rootfs-ubuntu-oracular  ( Compile ubuntu-oracular rootfs )
+9. cd ~/build-raspberrypi5/rootfs-ubuntu-oracular  ( Compile ubuntu-oracular rootfs )
    make rootfs
    The result is in ./linaro-rootfs.img
    make clean
 
-9. cd ~/build-raspberrypi5/bookworm-gnome  ( Build debian bookworm gnome-desktop image )
-   Plugin sdcard/USB2-SATA-SSD to PC.
-   sudo ./mksdcardimg.sh
-   Eject sdcard/USB2-SATA-SSD from PC.
-
-10. cd ~/build-raspberrypi5/bookworm-weston ( Build debian bookworm weston-desktop image )
+10. cd ~/build-raspberrypi5/bookworm-gnome  ( Build debian bookworm gnome-desktop image )
     Plugin sdcard/USB2-SATA-SSD to PC.
-    sudo ./mksdcardimg.sh
+    sudo ./mksdcardimg.sh    ( sudo ./mkusbimg.sh for USB2-SATA-SSD )
     Eject sdcard/USB2-SATA-SSD from PC.
 
-11. cd ~/build-raspberrypi5/ubuntu-noble    ( Build ubuntu-noble image )
+11. cd ~/build-raspberrypi5/bookworm-weston ( Build debian bookworm weston-desktop image )
     Plugin sdcard/USB2-SATA-SSD to PC.
-    sudo ./mksdcardimg.sh
+    sudo ./mksdcardimg.sh    ( sudo ./mkusbimg.sh for USB2-SATA-SSD )
     Eject sdcard/USB2-SATA-SSD from PC.
 
-12. cd ~/build-raspberrypi5/ubuntu-oracular  ( Build ubuntu-oracular image )
+12. cd ~/build-raspberrypi5/ubuntu-noble    ( Build ubuntu-noble image )
     Plugin sdcard/USB2-SATA-SSD to PC.
-    sudo ./mksdcardimg.sh
+    sudo ./mksdcardimg.sh    ( sudo ./mkusbimg.sh for USB2-SATA-SSD )
     Eject sdcard/USB2-SATA-SSD from PC.
 
-13. cd ~/build-raspberrypi5/fedora           ( Build fedora image )
+13. cd ~/build-raspberrypi5/ubuntu-oracular  ( Build ubuntu-oracular image )
+    Plugin sdcard/USB2-SATA-SSD to PC.
+    sudo ./mksdcardimg.sh    ( sudo ./mkusbimg.sh for USB2-SATA-SSD )
+    Eject sdcard/USB2-SATA-SSD from PC.
 
-14. cd ~/build-raspberrypi5/ubuntu-uefi      ( Build ubuntu-uefi image )
+14. cd ~/build-raspberrypi5/fedora           ( Build fedora image )
 
-15. cd ~/build-raspberrypi5/yocto            ( Build yocto image )
+15. cd ~/build-raspberrypi5/ubuntu-uefi      ( Build ubuntu-uefi image )
 
-16. cd ~/build-raspberrypi5/buildroot        ( Build buildroot image )
+16. cd ~/build-raspberrypi5/yocto            ( Build yocto image )
 
-17. cd ~/build-raspberrypi5/bookworm-flightaware  ( Build flightaware image )
+17. cd ~/build-raspberrypi5/buildroot        ( Build buildroot image )
 
-18. cd ~/build-raspberrypi5/bookworm-gpio    ( Build gpio and pn532nfc image )
+18. cd ~/build-raspberrypi5/bookworm-flightaware  ( Build flightaware image )
+
+19. cd ~/build-raspberrypi5/bookworm-gpio    ( Build gpio and pn532nfc image )

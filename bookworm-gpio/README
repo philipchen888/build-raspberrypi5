@@ -23,7 +23,7 @@ The following 8 pn532nfc tests are included:
 7. updatendef     ( write read mifareclassic_ndef )
 8. ndeftoclassic  ( change mifareclassic_ndef to mifareclassic )
 
-Input files: ../kernel/out/boot.img
+Input files: ../uboot/out/boot.img
              ../rootfs-bookworm/linaro-rootfs.img
 
 Plugin sdcard to PC.
