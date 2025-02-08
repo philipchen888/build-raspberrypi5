@@ -14,5 +14,5 @@ ${ROOT_UUID}
 w
 y
 EOF
-dd if=../uboot/out/boot.img of=${BOOT} bs=4096 seek=4096 conv=notrunc,fsync
+dd if=../rootfs-weston/linaro-esp.img of=${BOOT} bs=4096 seek=4096 conv=notrunc,fsync
 dd if=../rootfs-weston/linaro-rootfs.img of=${BOOT} bs=4096 seek=135168 conv=notrunc,fsync

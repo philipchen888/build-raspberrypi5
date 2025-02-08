@@ -2,7 +2,7 @@ export LB_BOOTSTRAP_INCLUDE="apt-transport-https"
 export ARCH=arm64
 export CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
 
-rootfs: clean prebuild buildrootfs postbuild mkimage
+rootfs: clean prebuild buildrootfs postbuild mkimage mkespimage
 
 clean:
 	sudo lb clean --purge
@@ -52,3 +52,6 @@ postbuild:
 
 mkimage:
 	$(PWD)/../mk-image.sh
+
+mkespimage:
+	$(PWD)/../mk-ubuntuespimage.sh

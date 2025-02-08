@@ -42,7 +42,7 @@ sudo mkdir -p $TARGET_ROOTFS_DIR/packages
 sudo cp -rf ../packages/$ARCH/* $TARGET_ROOTFS_DIR/packages
 sudo cp -rf ../kernel/linux/tmp/boot/* $TARGET_ROOTFS_DIR/boot
 sudo mkdir -p $TARGET_ROOTFS_DIR/boot/firmware
-sudo cp ../linux/patches/40_custom_uuid $TARGET_ROOTFS_DIR/boot
+sudo cp ../kernel/patches/40_custom_uuid $TARGET_ROOTFS_DIR/boot
 
 # overlay folder
 sudo cp -rf ../overlay/* $TARGET_ROOTFS_DIR/
@@ -65,7 +65,7 @@ echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf
 resolvconf -u
 apt-get update
 apt-get upgrade -y
-apt-get install -y build-essential git wget grub-efi-arm64 e2fsprogs zstd
+apt-get install -y build-essential git wget grub-efi-arm64 e2fsprogs zstd initramfs-tools
 
 ls -la /boot/firmware
 rm -rf /boot/firmware
@@ -117,7 +117,7 @@ sed -i 's/#WaylandEnable=false/WaylandEnable=true/g' /etc/gdm3/custom.conf
 systemctl enable rc-local
 systemctl enable resize-helper
 chsh -s /bin/bash linaro
-update-initramfs -c -k 6.13.0-rc7-v8-16k+
+update-initramfs -c -k 6.13.1-v8-16k+
 sync
 
 #---------------Clean--------------

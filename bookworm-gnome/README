@@ -1,14 +1,24 @@
 Build bookworm-gnome sdcard for raspberrypi5:
 
-Input files: ../uboot/out/boot.img  bootusb.img
+Input files: ../rootfs-bookworm/linaro-esp.img
              ../rootfs-bookworm/linaro-rootfs.img
 
+cd ~/Downloads
+wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
+
+cd ~/build-raspberrypi5/bookworm-gnome
+
 Plugin sdcard/USB2-SATA-SSD to PC.
-sudo ./mksdcardimg.sh    ( sudo ./mkusbimg.sh for USB2-SATA-SSD )
+sudo ./mksdcardimg.sh
+sudo mount /dev/sda1 /mnt
+cd /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
+cd ~/build-raspberrypi5/bookworm-gnome
+sync
+sudo umount /mnt
 Eject sdcard/USB2-SATA-SSD from PC.
 
 Plugin sdcard/USB2-SATA-SSD to rpi5.
-
 Login:
 Username: linaro
 Password: linaro
@@ -24,14 +34,17 @@ sudo apt upgrade
 sync
 sudo shutdown -h now
 Power off, power on
+sudo cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
 glxinfo | grep OpenGL
 date
+Check if Debian is running UEFI mode:
+ls /sys/firmware/efi
 Check display mode: ( wayland or x11 )
 echo $XDG_SESSION_TYPE
 Check audio driver: ( pulseaudio or pipewire )
 pactl info
 
-sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc firefox-esr
+sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc firefox-esr vlc vlc-plugin-video-output
 
 speedtest-cli --secure
 
@@ -47,7 +60,9 @@ cd yt-dlp
 make
 cd ../
 ~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan.mp4
-mpv swan.mp4
+mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
+grep Using mpv.log
+cvlc --gl=wgl --glconv=any swan.mp4
 
 sudo rfkill list
 hciconfig hci0

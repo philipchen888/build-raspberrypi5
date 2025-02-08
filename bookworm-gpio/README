@@ -55,6 +55,7 @@ sudo cat /sys/kernel/debug/gpio
 
 gcc gpio_test.c -o gpio_test
 sudo ./gpio_test
+chmod 755 gpio_test.py
 sudo ./gpio_test.py
 
 wget https://github.com/WiringPi/WiringPi/archive/refs/tags/3.2.zip

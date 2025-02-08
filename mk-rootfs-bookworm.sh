@@ -42,7 +42,7 @@ sudo mkdir -p $TARGET_ROOTFS_DIR/packages
 sudo cp -rf ../packages/$ARCH/* $TARGET_ROOTFS_DIR/packages
 sudo cp -rf ../kernel/linux/tmp/boot/* $TARGET_ROOTFS_DIR/boot
 sudo mkdir -p $TARGET_ROOTFS_DIR/boot/firmware
-sudo cp ../linux/patches/40_custom_uuid $TARGET_ROOTFS_DIR/boot
+sudo cp ../kernel/patches/40_custom_uuid $TARGET_ROOTFS_DIR/boot
 
 # overlay folder
 sudo cp -rf ../overlay/* $TARGET_ROOTFS_DIR/
@@ -70,7 +70,7 @@ mv /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d
 echo -e "deb http://archive.raspberrypi.org/debian bookworm main" >> /etc/apt/sources.list
 apt-get update
 apt-get upgrade -y
-apt-get install -y build-essential git wget grub-efi-arm64 e2fsprogs zstd
+apt-get install -y build-essential git wget grub-efi-arm64 e2fsprogs zstd initramfs-tools
 
 ls -la /boot/firmware
 rm -rf /boot/firmware
@@ -116,7 +116,7 @@ apt remove orca -y
 systemctl enable rc-local
 systemctl enable resize-helper
 chsh -s /bin/bash linaro
-update-initramfs -c -k 6.13.0-rc7-v8-16k+
+update-initramfs -c -k 6.13.1-v8-16k+
 sync
 
 #---------------Clean--------------

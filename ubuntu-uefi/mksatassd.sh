@@ -1,5 +1,4 @@
 #!/bin/sh
 BOOT=/dev/sda
-parted ${BOOT} mklabel gpt
-parted ${BOOT} unit s mkpart boot fat32 2048 9830399
-parted ${BOOT} set 1 boot on
+parted -s ${BOOT} mklabel gpt
+parted -s ${BOOT} -- unit s mkpart boot2 ext4 32768 -34s
