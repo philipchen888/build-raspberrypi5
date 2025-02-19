@@ -116,7 +116,7 @@ apt remove orca -y
 systemctl enable rc-local
 systemctl enable resize-helper
 chsh -s /bin/bash linaro
-update-initramfs -c -k 6.13.1-v8-16k+
+update-initramfs -c -k 6.13.2-v8-16k+
 sync
 
 #---------------Clean--------------
