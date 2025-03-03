@@ -1,0 +1,106 @@
+Build android sdcard image for raspberrypi5.
+
+   See https://raspberrytips.com/android-raspberry-pi-4/
+   Here are the required steps to install Android on Raspberry Pi:
+
+    Download the LineageOS version for Raspberry Pi from Konstakang.
+    Download Google Apps and save it on a USB memory stick.
+    Flash the custom image to an SD card and start the Raspberry Pi.
+    Reboot in recovery mode to install the Google Apps.
+
+   Download from https://konstakang.com/devices/rpi5/AOSP15
+   AOSP15-20241210-KonstaKANG-rpi5.zip
+   AOSP15-20241210-KonstaKANG-rpi5-ota.zip
+   unzip AOSP15-20241210-KonstaKANG-rpi5.zip
+
+   sudo dd if=./AOSP15-20241210-KonstaKANG-rpi5.img of=/dev/sda bs=4096 conv=notrunc,fsync
+   Eject sdcard, plugin sdcard to rpi5.
+   After setting up android, turn on developer mode.
+   Settings -> About tablet -> click build number 7 times
+   Settings -> System -> Raspberry Pi settings -> ADB ( turn on ) 
+   Shutdown android ( click F5 ).
+   Download Google Play Store from https://sourceforge.net/projects/nikgapps/
+   wget https://sourceforge.net/projects/nikgapps/files/Releases/Android-15/12-Dec-2024/NikGapps-basic-arm64-15-20241212-signed.zip/download
+   mv download NikGapps-Basic-arm64-15-20241212-signed.zip
+   Plugin USB memory stick to host PC.
+   sudo mount /dev/sda1 /mnt
+   cp ~/Downloads/AOSP15-20241210-KonstaKANG-rpi5-ota.zip /mnt
+   cp ~/Downloads/NikGapps-Basic-arm64-15-20241212-signed.zip /mnt
+   sync
+   sudo umount /mnt
+   Eject USB memory stick, and plug it to rpi5.
+   Boot to TWRP recovery: Settings -> System -> Raspberry Pi settings -> Reboot to recovery -> F5 ( shutdown ) -> power on.
+   Install AOSP15-20241210-KonstaKANG-rpi5-ota.zip from your selected storage:
+   Install -> Select Storage -> USB -> OK -> AOSP13-20230615-KonstaKANG-rpi5-ota.zip -> swipe -> back -> Install NikGapps-Basic-arm64-15-20241212-signed.zip -> swipe -> Reboot -> system
+
+   Enable sound: Settings -> System -> Raspberry Pi settings -> Audio device (HDMI0).
+
+   When run Google Play Store, Got the device is not certified to run Google apps.
+   adb connect 192.168.86.xxx:xxxxx
+   adb root
+   adb connect 192.168.86.xxx:xxxxx
+   adb shell 'sqlite3 /data/user/$(cmd activity get-current-user)/*/*/gservices.db "select * from main where name = \"android_id\";"'
+   This will get device gsf id
+   Open https://google.com/android/uncertified on your Raspberry Pi and paste the GSF code. After that, click on “Register“. Shutdown android ( click F5 ).
+   Wait for 30 minutes. Power on.
+   Open Google Play Store -> sign in. Install YouTube, Solitaire etc.
+
+
+Plugin sdcard to rpi5.
+After setting up android, turn on developer mode.
+Settings -> About tablet -> click build number 7 times
+Settings -> System -> Raspberry Pi settings -> ADB ( turn on )
+F5 -> Power off. Power on.
+
+adb devices -l
+adb connect 192.168.86.xxx:xxxxx
+adb root
+adb connect 192.168.86.xxx:xxxxx
+adb shell
+du -h /system
+mount -o rw,remount /
+exit
+
+To install apks:
+adb push helloworld.apk /sdcard
+adb push happybirthday.apk /sdcard
+adb push diceroller.apk /sdcard
+adb push drawing.apk /sdcard
+adb push drawshape.apk /sdcard
+adb push kaleidoscope.apk /sdcard
+adb push myanalogclock.apk /sdcard
+adb push randomsong.apk /sdcard
+adb shell
+cd /system/priv-app
+ln -s /sdcard/helloworld.apk .
+ln -s /sdcard/happybirthday.apk .
+ln -s /sdcard/diceroller.apk .
+ln -s /sdcard/drawing.apk .
+ln -s /sdcard/drawshape.apk .
+ln -s /sdcard/kaleidoscope.apk .
+ln -s /sdcard/myanalogclock.apk .
+ln -s /sdcard/randomsong.apk .
+exit
+adb install -r helloworld.apk
+adb install -r happybirthday.apk
+adb install -r diceroller.apk
+adb install -r drawing.apk
+adb install -r drawshape.apk
+adb install -r kaleidoscope.apk
+adb install -r myanalogclock.apk
+adb install -r randomsong.apk
+adb shell
+mount -o ro,remount /
+exit
+
+To uninstall apks:
+adb uninstall com.example.helloworld
+adb uninstall com.example.happybirthday
+adb uninstall com.example.diceroller
+adb uninstall com.example.drawing
+adb uninstall com.example.drawshape
+adb uninstall com.example.kaleidoscope
+adb uninstall com.example.myanalogclock
+adb uninstall com.example.randomsong
+
+-----------------------------------------------------

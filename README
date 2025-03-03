@@ -149,3 +149,5 @@ Steps to build raspberrypi5 sdcard image:
 19. cd ~/build-raspberrypi5/bookworm-gpio    ( Build gpio and pn532nfc image )
 
 20. cd ~/build-raspberrypi5/bookworm-uefi    ( Build bookworm-uefi image )
+
+21. cd ~/build-raspberrypi5/android          ( Build android image )
