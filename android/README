@@ -31,7 +31,7 @@ Build android sdcard image for raspberrypi5.
    Eject USB memory stick, and plug it to rpi5.
    Boot to TWRP recovery: Settings -> System -> Raspberry Pi settings -> Reboot to recovery -> F5 ( shutdown ) -> power on.
    Install AOSP15-20241210-KonstaKANG-rpi5-ota.zip from your selected storage:
-   Install -> Select Storage -> USB -> OK -> AOSP13-20230615-KonstaKANG-rpi5-ota.zip -> swipe -> back -> Install NikGapps-Basic-arm64-15-20241212-signed.zip -> swipe -> Reboot -> system
+   Install -> Select Storage -> USB -> OK -> AOSP15-20241210-KonstaKANG-rpi5-ota.zip -> swipe -> back -> Install NikGapps-Basic-arm64-15-20241212-signed.zip -> swipe -> Reboot -> system
 
    Enable sound: Settings -> System -> Raspberry Pi settings -> Audio device (HDMI0).
 
@@ -106,6 +106,12 @@ adb uninstall com.example.randomsong
 -----------------------------------------------------
 
 Compile android 15 from source:  ( It may take 8 hours )
+
+sudo apt remove repo
+wget 'https://storage.googleapis.com/git-repo-downloads/repo' -P /tmp/
+sudo cp /tmp/repo /usr/local/bin/repo
+sudo chmod +x /usr/local/bin/repo
+
 Need to increase swap to 48GB if DDR ram size is 16 GB. ( DDR ram + swap = 64 GB )
 See https://stackoverflow.com/questions/77278089/aosp-14-build-error-100-1-1-analyzing-android-bp-files-and-generating-ninja-f
 grep Swap /proc/meminfo
@@ -128,7 +134,6 @@ sudo apt-get install bc coreutils dosfstools e2fsprogs fdisk kpartx mtools ninja
 mkdir android15; cd android15;
 repo init -u https://android.googlesource.com/platform/manifest -b android-15.0.0_r20 --depth=1
 curl -o .repo/local_manifests/manifest_brcm_rpi.xml -L https://raw.githubusercontent.com/raspberry-vanilla/android_local_manifest/android-15.0/manifest_brcm_rpi.xml --create-dirs
-curl -o .repo/local_manifests/remove_projects.xml -L https://raw.githubusercontent.com/raspberry-vanilla/android_local_manifest/android-15.0/manifest_utilities.xml
 curl -o .repo/local_manifests/remove_projects.xml -L https://raw.githubusercontent.com/raspberry-vanilla/android_local_manifest/android-15.0/remove_projects.xml
 repo sync
 . build/envsetup.sh
