@@ -9,11 +9,11 @@ Build android sdcard image for raspberrypi5.
     Reboot in recovery mode to install the Google Apps.
 
    Download from https://konstakang.com/devices/rpi5/AOSP15
-   AOSP15-20241210-KonstaKANG-rpi5.zip
-   AOSP15-20241210-KonstaKANG-rpi5-ota.zip
-   unzip AOSP15-20241210-KonstaKANG-rpi5.zip
+   AOSP15-20250306-KonstaKANG-rpi5.zip
+   AOSP15-20250306-KonstaKANG-rpi5-ota.zip
+   unzip AOSP15-20250306-KonstaKANG-rpi5.zip
 
-   sudo dd if=./AOSP15-20241210-KonstaKANG-rpi5.img of=/dev/sda bs=4096 conv=notrunc,fsync
+   sudo dd if=./AOSP15-20250306-KonstaKANG-rpi5.img of=/dev/sda bs=4096 conv=notrunc,fsync
    Eject sdcard, plugin sdcard to rpi5.
    After setting up android, turn on developer mode.
    Settings -> About tablet -> click build number 7 times
@@ -24,14 +24,14 @@ Build android sdcard image for raspberrypi5.
    mv download NikGapps-Basic-arm64-15-20241212-signed.zip
    Plugin USB memory stick to host PC.
    sudo mount /dev/sda1 /mnt
-   cp ~/Downloads/AOSP15-20241210-KonstaKANG-rpi5-ota.zip /mnt
+   cp ~/Downloads/AOSP15-20250306-KonstaKANG-rpi5-ota.zip /mnt
    cp ~/Downloads/NikGapps-Basic-arm64-15-20241212-signed.zip /mnt
    sync
    sudo umount /mnt
    Eject USB memory stick, and plug it to rpi5.
    Boot to TWRP recovery: Settings -> System -> Raspberry Pi settings -> Reboot to recovery -> F5 ( shutdown ) -> power on.
-   Install AOSP15-20241210-KonstaKANG-rpi5-ota.zip from your selected storage:
-   Install -> Select Storage -> USB -> OK -> AOSP15-20241210-KonstaKANG-rpi5-ota.zip -> swipe -> back -> Install NikGapps-Basic-arm64-15-20241212-signed.zip -> swipe -> Reboot -> system
+   Install AOSP15-20250306-KonstaKANG-rpi5-ota.zip from your selected storage:
+   Install -> Select Storage -> USB -> OK -> AOSP15-20250306-KonstaKANG-rpi5-ota.zip -> swipe -> back -> Install NikGapps-Basic-arm64-15-20241212-signed.zip -> swipe -> Reboot -> system
 
    Enable sound: Settings -> System -> Raspberry Pi settings -> Audio device (HDMI0).
 
@@ -56,6 +56,12 @@ adb devices -l
 adb connect 192.168.86.xxx:xxxxx
 adb root
 adb connect 192.168.86.xxx:xxxxx
+adb tcpip 5555
+adb shell getprop service.adb.tcp.port  ( should return 5555 )
+reboot
+adb connect 192.168.86.xxx:5555
+adb root
+adb connect 192.168.86.xxx:5555
 adb shell
 du -h /system
 mount -o rw,remount /
@@ -136,10 +142,11 @@ repo init -u https://android.googlesource.com/platform/manifest -b android-15.0.
 curl -o .repo/local_manifests/manifest_brcm_rpi.xml -L https://raw.githubusercontent.com/raspberry-vanilla/android_local_manifest/android-15.0/manifest_brcm_rpi.xml --create-dirs
 curl -o .repo/local_manifests/remove_projects.xml -L https://raw.githubusercontent.com/raspberry-vanilla/android_local_manifest/android-15.0/remove_projects.xml
 repo sync
+repo sync -j1 --fail-fast
 . build/envsetup.sh
 lunch aosp_rpi5-bp1a-userdebug
 make bootimage systemimage vendorimage -j$(nproc)
 ./rpi5-mkimg.sh
 
-The result is in out/target/product/rpi5/RaspberryVanillaAOSP15-20250307-rpi5.img
-sudo dd if=./out/target/product/rpi5/RaspberryVanillaAOSP15-20250307-rpi5.img of=/dev/sda bs=4096 conv=notrunc,fsync
+The result is in out/target/product/rpi5/RaspberryVanillaAOSP15-20250309-rpi5.img
+sudo dd if=./out/target/product/rpi5/RaspberryVanillaAOSP15-20250309-rpi5.img of=/dev/sda bs=4096 conv=notrunc,fsync
