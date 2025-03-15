@@ -52,16 +52,12 @@ Settings -> About tablet -> click build number 7 times
 Settings -> System -> Raspberry Pi settings -> ADB ( turn on )
 F5 -> Power off. Power on.
 
-adb devices -l
-adb connect 192.168.86.xxx:xxxxx
-adb root
 adb connect 192.168.86.xxx:xxxxx
 adb tcpip 5555
+adb connect 192.168.86.xxx:5555
+adb devices -l   ( keep runing adb devices -l till only one connected )
 adb shell getprop service.adb.tcp.port  ( should return 5555 )
-reboot
-adb connect 192.168.86.xxx:5555
 adb root
-adb connect 192.168.86.xxx:5555
 adb shell
 du -h /system
 mount -o rw,remount /
