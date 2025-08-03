@@ -62,11 +62,11 @@ wget https://github.com/WiringPi/WiringPi/archive/refs/tags/3.2.zip
 unzip 3.2.zip
 cd WiringPi-3.2
 ./build
+cd
 gpio -v
 
 Check kernel driver readiness:
 ls /dev  ( look for i2c-1, ttyAMA2, spidev0.0 )
-sudo cat /proc/device-tree/soc@107c000000/serial@7d50c000/status  ( uart 2 )
 sudo cat /proc/device-tree/soc@107c000000/i2c@7d508200/status  ( i2c-1 )
 sudo cat /proc/device-tree/soc@107c000000/spi@7d004000/status  ( spi-0 )
 

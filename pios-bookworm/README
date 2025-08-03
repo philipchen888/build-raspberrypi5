@@ -1,0 +1,9 @@
+This is to build PI OS bookworm image.
+
+sudo apt install rpi-imager
+Plugin sdcard to PC.
+rpi-imager ( burn pi os bookworm to sdcard )
+choose device ( pi 5 ) -> choose os ( pi os 64 bit ) -> choose storage ( mass storage ) -> next -> No customization -> YES -> continue > x
+Eject sdcard from PC.
+
+Plugin sdcard to rpi5. 

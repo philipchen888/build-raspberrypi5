@@ -1,11 +1,16 @@
 Compile vendor's kernel:
 
-git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.13.y
+git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.16.y
 vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
 
 Install ovmerge from  https://github.com/raspberrypi/utils
 cd ./linux/arch/arm64/boot/dts/broadcom
+
+To enable fan and disable bluetooth:
+vi bcm2712-rpi-5-b.dts ( search fan: cooling_fan change disabled to okay, search &rp1_pwm1 change disabled to okay, search bluetooth add status = "disabled"; search uarta change okay to disabled )
 cp bcm2712-rpi-5-b.dts bcm2712-rpi-5-b.dts.org
+
+To enable i2c, spi, uart2 and vc4:
 ovmerge -c -p bcm2712-rpi-5-b.dts,i2c1=on,i2c_arm=on,spi=on ../overlays/uart2-pi5-overlay.dts ../overlays/vc4-kms-v3d-pi5-overlay.dts,cma-512 > custom.dts
 cp custom.dts bcm2712-rpi-5-b.dts
 cd ../../../../../../

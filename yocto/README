@@ -77,8 +77,8 @@ sudo nmcli dev wifi connect "SSID" password "PASSWORD"
 sudo ifconfig
 uname -a
 adduser linaro
-usermod -aG sudo linaro
-sudo visudo /etc/sudoers ( add linaro ALL=(ALL:ALL) ALL )
+usermod -aG adm,sudo,video linaro
+# sudo visudo /etc/sudoers ( add linaro ALL=(ALL:ALL) ALL )
 sync
 reboot
 ssh root@192.168.86.229

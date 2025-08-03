@@ -14,11 +14,11 @@ builduboot:
 	make -j6
 
 boot:
-	mkimage -A arm64 -O linux -T script -C none -d boot_cmd.txt $(OUT)/boot.scr.uimg; \
+	mkimage -A arm64 -O linux -T script -C none -d boot_cmd.txt $(OUT)/boot.scr; \
 	\rm -f $(BOOT); \
 	mkfs.vfat -n "boot" -i ${BOOT_UUID} -S 512 -C ${BOOT} 512000; \
 	mmd -i ${BOOT} ::/overlays; \
-	mcopy -i ${BOOT} -s $(OUT)/boot.scr.uimg ::; \
+	mcopy -i ${BOOT} -s $(OUT)/boot.scr ::; \
 	mcopy -i ${BOOT} -s ./config.txt ::; \
 	mcopy -i ${BOOT} -s ./cmdline.txt ::; \
 	mcopy -i ${BOOT} -s ./u-boot/u-boot.bin ::; \

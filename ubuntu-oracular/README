@@ -18,12 +18,11 @@ sync
 sudo umount /mnt
 Eject sdcard/USB2-SATA-SSD from PC.
 
-Plugin sdcard/USB2-SATA-SSD to rpi5.
+Plugin sdcard/USB2-SATA-SSD and ASUS USB-BT500 bluetooth usb dongle to rpi5.
 Login:
 Username: linaro
 Password: linaro
 Setup wifi. Disable power saving and screen saver.
-sudo dpkg-reconfigure openssh-server
 uname -a
 lsb_release -a
 sudo ifconfig
@@ -43,7 +42,14 @@ HandleLidSwitch=ignore
 sync
 sudo shutdown -h now
 Power off, power on
-sudo cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+
+Check CPU speed:
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+
+Check fan:
+cat /proc/device-tree/cooling_fan/status
+cat /sys/class/thermal/cooling_device0/type
+
 glxinfo | grep OpenGL
 date
 Check if Ubuntu is running UEFI mode:
@@ -64,7 +70,7 @@ pavucontrol  ( select hdmi as default )
 
 sudo add-apt-repository ppa:mozillateam/ppa
 sudo apt update
-sudo apt install firefox-esr
+sudo apt install firefox
 firefox -> youtube.com -> search YmDNhi07_Ho
 
 git clone https://github.com/yt-dlp/yt-dlp.git
@@ -75,7 +81,8 @@ cd ../
 mpv swan.mp4
 cvlc --gl=wgl --glconv=any swan.mp4
 
+sudo rfkill unblock all
 sudo rfkill list
-hciconfig hci0
+sudo hciconfig hci0 up
 hcitool dev
 hciconfig -a

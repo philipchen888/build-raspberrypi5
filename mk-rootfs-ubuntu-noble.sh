@@ -42,7 +42,10 @@ sudo mkdir -p $TARGET_ROOTFS_DIR/packages
 sudo cp -rf ../packages/$ARCH/* $TARGET_ROOTFS_DIR/packages
 sudo cp -rf ../kernel/linux/tmp/boot/* $TARGET_ROOTFS_DIR/boot
 sudo mkdir -p $TARGET_ROOTFS_DIR/boot/firmware
-sudo cp ../kernel/patches/40_custom_uuid $TARGET_ROOTFS_DIR/boot
+export KERNEL_VERSION=$(ls $TARGET_ROOTFS_DIR/boot/vmlinuz-* 2>/dev/null | sed 's|.*/vmlinuz-||' | sort -V | tail -n 1)
+echo $KERNEL_VERSION
+sudo sed -e "s/6.16.0-rc7-v8-16k+/$KERNEL_VERSION/g" < ../kernel/patches/40_custom_uuid | sudo tee $TARGET_ROOTFS_DIR/boot/40_custom_uuid > /dev/null
+cat $TARGET_ROOTFS_DIR/boot/40_custom_uuid
 
 # overlay folder
 sudo cp -rf ../overlay/* $TARGET_ROOTFS_DIR/
@@ -101,8 +104,10 @@ update-grub
 chmod o+x /usr/lib/dbus-1.0/dbus-daemon-launch-helper
 chmod +x /etc/rc.local
 
-dpkg -i /packages/rpiwifi/firmware-brcm80211_20240909-2_all.deb
-cp /packages/rpiwifi/brcmfmac43455-sdio.txt /lib/firmware/brcm/
+dpkg -i /packages/rpiwifi/firmware-brcm80211_20250410-2_all.deb
+cp /packages/rpiwifi/BCM4345C0.hcd /lib/firmware/brcm/BCM4345C0.raspberrypi,5-model-b.hcd
+cp /packages/rpiwifi/BCM4345C0.hcd /lib/firmware/brcm/
+cp /packages/rtlbt/rtl8761bu* /lib/firmware/rtl_bt/
 apt-get install -f -y
 
 # Create the linaro user account
@@ -116,8 +121,9 @@ sed -i 's/#WaylandEnable=false/WaylandEnable=true/g' /etc/gdm3/custom.conf
 
 systemctl enable rc-local
 systemctl enable resize-helper
+systemctl enable bluetooth.service
 chsh -s /bin/bash linaro
-update-initramfs -c -k 6.13.1-v8-16k+
+update-initramfs -c -k $KERNEL_VERSION
 sync
 
 #---------------Clean--------------

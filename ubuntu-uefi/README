@@ -1,8 +1,7 @@
 Build ubuntu-uefi sdcard image for raspberrypi5:
 
 cd ~/Downloads
-wget https://cdimage.ubuntu.com/noble/daily-live/current/noble-desktop-arm64.iso
-wget https://cdimage.ubuntu.com/releases/oracular/release/ubuntu-24.10-desktop-arm64.iso
+wget https://cdimage.ubuntu.com/releases/25.04/release/ubuntu-25.04-desktop-arm64.iso
 wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
 
 cd ~/build-raspberrypi5/ubuntu-uefi
@@ -25,7 +24,7 @@ sudo mkfs.vfat /dev/sda1
 sudo fdisk -l /dev/sda
 sudo mount -t vfat /dev/sda1 /mnt
 cd /mnt
-sudo 7z x ~/Downloads/noble-desktop-arm64.iso
+sudo 7z x ~/Downloads/ubuntu-25.04-desktop-arm64.iso
 cd ~/build-raspberrypi5/ubuntu-uefi
 sync
 sudo umount /mnt
@@ -42,6 +41,11 @@ Install ubuntu from USB2 flash drive ubuntu iso to empty USB2 SATA ssd.
 ------------------------------------------------------------------------
 
 Plugin sdcard, USB2 flash drive and USB2 SATA ssd to rpi5. Plugin USB wifi dongle to rpi5. Power on rpi5.
+
+------------------------------------------------------------------------
+NOTE: If on board fan is not turned on, use external fan.
+------------------------------------------------------------------------
+
 Select install
 Double click Install Ubuntu LTS icon.
 Erase disk and install Ubuntu.
@@ -105,19 +109,22 @@ hciconfig hci0
 hcitool dev
 hciconfig -a
 
-rpi5 sound, wifi, ethernet and bluetooth are not supported in mainline kernel 6.8.0-52-generic
+rpi5 fan, sound, wifi, ethernet and bluetooth are not supported in mainline kernel 6.14.0-27-generic ( It could be because mainline kernel 6.14 cannot support dtoverlay )
 
 -------------------------------------------------------------
-Compile vendor's kernel 6.13.1-v8-16k+. 
+Compile vendor's kernel 6.16.0-v8-16k+ with ovmerge
 -------------------------------------------------------------
 
 sudo apt install git cmake device-tree-compiler libfdt-dev build-essential libncurses-dev bison flex libssl-dev libelf-dev fakeroot
 
-git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.13.y
+git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.16.y
 vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
 
 Install ovmerge from  https://github.com/raspberrypi/utils
 cd ./linux/arch/arm64/boot/dts/broadcom
+
+To enable fan:
+vi bcm2712-rpi-5-b.dts ( search fan: cooling_fan change disabled to okay, search &rp1_pwm1 change disabled to okay )
 cp bcm2712-rpi-5-b.dts bcm2712-rpi-5-b.dts.org
 ovmerge -c -p bcm2712-rpi-5-b.dts,i2c1=on,i2c_arm=on,spi=on ../overlays/uart2-pi5-overlay.dts ../overlays/vc4-kms-v3d-pi5-overlay.dts,cma-512 > custom.dts
 cp custom.dts bcm2712-rpi-5-b.dts
@@ -139,12 +146,12 @@ sudo vi /etc/grub.d/40_custom_uuid ( add
 exec tail -n +3 $0
 
 menuentry "Boot from UUID" {
-    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' c2226650-8360-4723-8f1c-c931ba4c41d6
-    echo    'Loading Linux 6.13.1-v8-16k+ ...'
-    linux /boot/vmlinuz-6.13.1-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
+    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 749d3790-119b-4c65-aa65-4229cccafe22
+    echo    'Loading Linux 6.16.0-v8-16k+ ...'
+    linux /boot/vmlinux-6.16.0-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
     echo    'Loading initial ramdisk ...'
-    initrd /boot/initrd.img-6.13.1-v8-16k+
-    devicetree /boot/dtbs/6.13.1-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb
+    initrd /boot/initrd.img-6.16.0-v8-16k+
+    devicetree /boot/dtbs/6.16.0-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb
 }
 )
 
@@ -159,21 +166,31 @@ sudo shutdown -h now
 
 Plugin USB2 SATA SSD to PC.
 sudo mount /dev/sda2 /mnt
-cp ./packages/firmware-brcm80211_20240909-2_all.deb /mnt/home/linaro
-sudo cp ./packages/brcmfmac43455-sdio.txt /mnt/lib/firmware/brcm/
-sudo cp ./packages/BCM4345C0.hcd /mnt/lib/firmware/brcm/
+cp ./packages/firmware-brcm80211_20250410-2_all.deb /mnt/home/linaro
+sudo cp ./packages/brcmfmac43455* /mnt/lib/firmware/brcm/
+sudo cp ./packages/BCM4345C0* /mnt/lib/firmware/brcm/
+sudo cp ./packages/rtl* /mnt/lib/firmware/rtl_bt/
 sync
 sudo umount /mnt
 Eject USB2 SATA SSD from PC.
 
-Plugin USB2 SATA SSD to rpi5. Remove USB wifi dongle from rpi5. Plugin ethernet cable to rpi5. Power on rpi5.
+Plugin USB2 SATA SSD to rpi5. Remove wifi usb dongle. Plugin ethernet cable to rpi5. Power on rpi5.
 uname -a
 lsb_release -a
-sudo dpkg -i firmware-brcm80211_20240909-2_all.deb
+sudo dpkg -i firmware-brcm80211_20250410-2_all.deb
 sync
-sudo reboot
-Setup wifi. Remove ethernet cable from rpi5.
-sudo cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+sudo shutdown -h now
+
+Remove ethernet cable. Power on rpi5.
+Setup wifi.
+
+Check CPU speed:
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+
+Check fan:
+cat /proc/device-tree/cooling_fan/status
+cat /sys/class/thermal/cooling_device0/type
+
 Check if Ubuntu is running UEFI mode:
 ls /sys/firmware/efi
 
@@ -192,6 +209,7 @@ mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
 grep Using mpv.log
 cvlc --gl=wgl --glconv=any swan.mp4
 
+Plugin ASUS USB-BT500 bluetooth usb dongle to rpi5.
 sudo rfkill list
 hciconfig hci0
 hcitool dev

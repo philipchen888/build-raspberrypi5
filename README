@@ -5,6 +5,7 @@ Parts needed:
 2. Sandisk 64GB SATA SSD with USB cable.
 3. Sandisk 64GB micro sdcard.
 4. Host PC with ubuntu 24.
+5. ASUS USB-BT500 bluetooth usb dongle.
 
 Note: If keyboard/mouse USB dongle interfere with USB2-SATA-SSD, put keyboard/mouse USB dongle in USB2 socket with USB extension cord.
 
@@ -16,24 +17,19 @@ Steps to build raspberrypi5 sdcard image:
    sudo apt-get install build-essential git libssl-dev nmap net-tools libncurses5-dev libncursesw5-dev dnsutils vsftpd ftp binfmt-support qemu-user-static scons libncurses5-dev libncursesw5-dev libdbus-glib-1-dev libbluetooth-dev python3-dev python3-pip python3-setuptools libcurl4-openssl-dev gettext dbus-x11 chrpath diffstat gawk texinfo curl flex bison device-tree-compiler swig libmpc-dev debootstrap debhelper kpartx gdisk devscripts isolinux po4a libgnutls28-dev mtools python-is-python3 python3-pyelftools gcc-aarch64-linux-gnu
 
 2. Install live-build:
-   sudo apt-get install debootstrap debhelper kpartx gdisk devscripts isolinux po4a
+   sudo apt-get install debootstrap debhelper kpartx gdisk devscripts isolinux po4a live-build
 
-   For debian:
+   lb --version ( 3.0~a57-1 /usr/bin/lb )
+
+   For bookworm:
    wget https://launchpad.net/debian/+archive/primary/+sourcefiles/live-build/1:20230502/live-build_20230502.tar.xz
    tar xvf live-build_20230502.tar.xz
    cd live-build
    vi Makefile ( search Installing manpages, delete from after done before uninstall: )
    sudo make install
-   lb --version ( 20230502 )
+   lb --version ( 20230502 /usr/bin/lb )
 
-   For ubuntu-noble and ubuntu-oracular
-   wget http://security.ubuntu.com/ubuntu/pool/main/l/live-build/live-build_3.0~a57-1ubuntu41.22.04.1_all.deb
-   sudo dpkg -i live-build_3.0~a57-1ubuntu41.22.04.1_all.deb
-   lb --version ( 3.0~a57-1 /usr/bin/lb )
-
-3. cd ~/build-raspberrypi5/uboot  ( Compile mainline u-boot )
-   Can boot sdcard now. Cannot boot USB SATA SSD yet.
-
+3. cd ~/build-raspberrypi5/uboot  ( Compile mainline u-boot, still cannot boot rpi5 yet )
    git clone --depth=1 -b master https://github.com/raspberrypi/firmware.git
    git clone --depth=1 -b master https://source.denx.de/u-boot/u-boot.git
    \rm -rf out; mkdir out;
@@ -44,15 +40,15 @@ Steps to build raspberrypi5 sdcard image:
    The result are in ./out/boot.img bootusb.img
 
 4. cd ~/build-raspberrypi5/kernel ( Compile vendor's kernel )
-   git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.13.y
+   git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.16.y
    vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
-   Use ovmerge to change bcm2712-rpi-5-b.dts to include all dtoverlay.
+   Use ovmerge to change bcm2712-rpi-5-b.dts to include some dtoverlay ( uart2, vc4, i2c, spi etc.).
    \rm -rf out; mkdir out; 
 
    make kernel
    The result is in ./out/boot.img
 
-5. cd ~/build-raspberrypi5/linux  ( Compile mainline kernel, still cannot boot rpi5 )
+5. cd ~/build-raspberrypi5/linux  ( Compile mainline kernel, still cannot boot rpi5 yet )
    wget https://git.kernel.org/torvalds/t/linux-6.14-rc2.tar.gz
    tar -xzf linux-6.14-rc2.tar.gz
    mv linux-6.14-rc2 linux 
@@ -81,7 +77,12 @@ Steps to build raspberrypi5 sdcard image:
    The results are in ./linaro-rootfs.img  linaro-esp.img
    make clean
 
-10. cd ~/build-raspberrypi5/bookworm-gnome  ( Build debian bookworm gnome-desktop image )
+10. cd ~/build-raspberrypi5/rootfs-ubuntu-plucky  ( Compile ubuntu-plucky rootfs )
+   make rootfs
+   The results are in ./linaro-rootfs.img  linaro-esp.img
+   make clean
+
+11. cd ~/build-raspberrypi5/bookworm-gnome  ( Build debian bookworm gnome-desktop image )
     Plugin sdcard/USB2-SATA-SSD to PC.
     sudo ./mksdcardimg.sh
     sudo mount /dev/sda1 /mnt
@@ -92,7 +93,7 @@ Steps to build raspberrypi5 sdcard image:
     sudo umount /mnt
     Eject sdcard/USB2-SATA-SSD from PC.
 
-11. cd ~/build-raspberrypi5/bookworm-weston ( Build debian bookworm weston-desktop image )
+12. cd ~/build-raspberrypi5/bookworm-weston ( Build debian bookworm weston-desktop image )
     Plugin sdcard/USB2-SATA-SSD to PC.
     sudo ./mksdcardimg.sh
     sudo mount /dev/sda1 /mnt
@@ -114,7 +115,7 @@ Steps to build raspberrypi5 sdcard image:
     sudo umount /mnt
     Eject sdcard/USB2-SATA-SSD from PC.
 
-12. cd ~/build-raspberrypi5/ubuntu-noble    ( Build ubuntu-noble image )
+13. cd ~/build-raspberrypi5/ubuntu-noble    ( Build ubuntu-noble image )
     Plugin sdcard/USB2-SATA-SSD to PC.
     sudo ./mksdcardimg.sh
     sudo mount /dev/sda1 /mnt
@@ -125,7 +126,7 @@ Steps to build raspberrypi5 sdcard image:
     sudo umount /mnt
     Eject sdcard/USB2-SATA-SSD from PC.
 
-13. cd ~/build-raspberrypi5/ubuntu-oracular  ( Build ubuntu-oracular image )
+14. cd ~/build-raspberrypi5/ubuntu-oracular  ( Build ubuntu-oracular image )
     Plugin sdcard/USB2-SATA-SSD to PC.
     sudo ./mksdcardimg.sh
     sudo mount /dev/sda1 /mnt
@@ -136,18 +137,31 @@ Steps to build raspberrypi5 sdcard image:
     sudo umount /mnt
     Eject sdcard/USB2-SATA-SSD from PC.
 
-14. cd ~/build-raspberrypi5/fedora           ( Build fedora image )
+15. cd ~/build-raspberrypi5/ubuntu-plucky  ( Build ubuntu-plucky image )
+    Plugin sdcard/USB2-SATA-SSD to PC.
+    sudo ./mksdcardimg.sh
+    sudo mount /dev/sda1 /mnt
+    cd /mnt
+    sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
+    cd ~/build-raspberrypi5/ubuntu-plucky
+    sync
+    sudo umount /mnt
+    Eject sdcard/USB2-SATA-SSD from PC.
 
-15. cd ~/build-raspberrypi5/ubuntu-uefi      ( Build ubuntu-uefi image )
+16. cd ~/build-raspberrypi5/fedora           ( Build fedora image )
 
-16. cd ~/build-raspberrypi5/yocto            ( Build yocto image )
+17. cd ~/build-raspberrypi5/ubuntu-uefi      ( Build ubuntu-uefi image )
 
-17. cd ~/build-raspberrypi5/buildroot        ( Build buildroot image )
+18. cd ~/build-raspberrypi5/yocto            ( Build yocto image )
 
-18. cd ~/build-raspberrypi5/bookworm-flightaware  ( Build flightaware image )
+19. cd ~/build-raspberrypi5/buildroot        ( Build buildroot image )
 
-19. cd ~/build-raspberrypi5/bookworm-gpio    ( Build gpio and pn532nfc image )
+20. cd ~/build-raspberrypi5/bookworm-flightaware  ( Build flightaware image )
 
-20. cd ~/build-raspberrypi5/bookworm-uefi    ( Build bookworm-uefi image )
+21. cd ~/build-raspberrypi5/bookworm-gpio    ( Build gpio and pn532nfc image )
 
-21. cd ~/build-raspberrypi5/android          ( Build android image )
+22. cd ~/build-raspberrypi5/bookworm-uefi    ( Build bookworm-uefi image )
+
+23. cd ~/build-raspberrypi5/android          ( Build android image )
+
+24. cd ~/build-raspberrypi5/pios-bookworm    ( Build PI OS bookworm using rpi-imager )
