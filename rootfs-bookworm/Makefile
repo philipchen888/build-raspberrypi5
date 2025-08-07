@@ -35,10 +35,10 @@ prebuild:
 	--linux-flavours none \
 	--linux-packages none \
 	--parent-mirror-binary 'http://ftp.us.debian.org/debian/' \
-        --parent-mirror-binary-security 'http://security.debian.org/debian-security/' \
-        --parent-mirror-bootstrap 'http://ftp.us.debian.org/debian/' \
-        --parent-mirror-chroot 'http://ftp.us.debian.org/debian/' \
-        --parent-mirror-chroot-security 'http://security.debian.org/debian-security/' \
+	--parent-mirror-binary-security 'http://security.debian.org/debian-security/' \
+	--parent-mirror-bootstrap 'http://ftp.us.debian.org/debian/' \
+	--parent-mirror-chroot 'http://ftp.us.debian.org/debian/' \
+	--parent-mirror-chroot-security 'http://security.debian.org/debian-security/' \
 	--mode debian \
 	--security true \
 	--system normal

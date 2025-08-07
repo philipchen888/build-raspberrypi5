@@ -18,7 +18,7 @@ sync
 sudo umount /mnt
 Eject sdcard/USB2-SATA-SSD from PC.
 
-Plugin sdcard/USB2-SATA-SSD and ASUS USB-BT500 bluetooth usb dongle to rpi5.
+Plugin sdcard/USB2-SATA-SSD to rpi5.
 Login:
 Username: linaro
 Password: linaro
@@ -65,13 +65,13 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan.mp4
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=mp4]' 3qrKjywjo7Q -o swan.mp4
 mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
 grep Using mpv.log
 cvlc --gl=wgl --glconv=any swan.mp4
 
-sudo rfkill unblock all
+Plugin ASUS USB-BT500 bluetooth usb dongle to rpi5.
 sudo rfkill list
-sudo hciconfig hci0 up
+sudo hciconfig hci0
 hcitool dev
 hciconfig -a

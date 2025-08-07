@@ -57,7 +57,7 @@ firefox -> youtube.com -> search YmDNhi07_Ho
 
 sudo dnf install yt-dlp mpv rfkill speedtest-cli
 speedtest-cli
-yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' hyUhEjtlDLA -o avemaria.mp4
+yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=mp4]' hyUhEjtlDLA -o avemaria.mp4
 mpv avemaria.mp4
 
 sudo rfkill list

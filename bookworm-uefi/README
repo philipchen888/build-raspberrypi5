@@ -19,7 +19,13 @@ sync
 sudo umount /mnt
 Eject USB2 SATA ssd from PC.
 
-wpa_passphrase SSID PASSWORD  ( this generates long string of passphrase)
+------------------------------------------------------------------------
+Install bookworm to USB2 SATA ssd.
+NOTE: If on board fan is not turned on, use external fan.
+      To minimize EMI interference, put USB2 sata ssd to rpi5 bottom USB2 socket,
+      put wifi dongle to rpi5 top USB3 socket, put keyboard mouse to rpi5 bottom
+      USB3 socket with USB2 extention cable.
+------------------------------------------------------------------------
 
 Plugin USB2 sata ssd to rpi5. Plugin USB wifi dongle to rpi5. Power on rpi5.
 Select install
@@ -27,21 +33,15 @@ loading missing firmware? No
 Select debian desktop and gnome in addition to ssh and standard system utilities.
 User name: linaro
 
-Disable power saving and screen saver.
+Disable power saving, turn off auto suspend and screen saver.
 su -
-usermod -aG sudo linaro
+usermod -aG adm,sudo,video linaro
 shutdown -h now
 
-Plugin USB2 sata ssd to PC.
-sudo cp ./packages/brcmfmac43455-sdio.txt /media/$USER/*/lib/firmware/brcm/
-sudo cp ./packages/BCM4345C0.hcd /media/$USER/*/lib/firmware/brcm/
-sync 
-Eject USB2 sata ssd from PC. 
-
-Plugin USB2 sata ssd to rpi5 USB2 port. Unplug USB wifi dongle from rpi5. Power on rpi5.
+Power on rpi5.
+sudo apt install openssh-server net-tools
 uname -a
 lsb_release -a
-Setup wifi.
 sudo apt update; sudo apt upgrade; sudo apt install pulseaudio-utils;
 Check if Debian is running UEFI mode:
 ls /sys/firmware/efi
@@ -50,25 +50,31 @@ echo $XDG_SESSION_TYPE
 Check audio driver: ( pulseaudio or pipewire )
 pactl info
 
-sudo apt install build-essential speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2 pandoc vlc vlc-plugin-video-output pavucontrol
+sudo apt install build-essential speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2 pandoc vlc vlc-plugin-video-output pavucontrol rfkill
 
 speedtest-cli --secure
 
 glmark2-es2
 
-mainline kernel 6.1.0-30-arm64 doesn't support rpi5 sound, bluetooth.
+aplay -l
+sudo rfkill list
 
----------------------------------------------------------------
+mainline kernel 6.1.0-37-arm64 doesn't support rpi5 fan, sound, bluetooth, wifi, ethernet.
 
-Install vendor kernel 6.13.1-v8-16k+
+-------------------------------------------------------------
+Compile vendor's kernel 6.16.0-v8-16k+ with ovmerge
+-------------------------------------------------------------
 
 sudo apt install git cmake device-tree-compiler libfdt-dev build-essential libncurses-dev bison flex libssl-dev libelf-dev fakeroot
 
-git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.13.y
+git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.16.y
 vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
 
 Install ovmerge from  https://github.com/raspberrypi/utils
 cd ./linux/arch/arm64/boot/dts/broadcom
+
+To enable fan:
+vi bcm2712-rpi-5-b.dts ( search fan: cooling_fan change disabled to okay, search &rp1_pwm1 change disabled to okay )
 cp bcm2712-rpi-5-b.dts bcm2712-rpi-5-b.dts.org
 ovmerge -c -p bcm2712-rpi-5-b.dts,i2c1=on,i2c_arm=on,spi=on ../overlays/uart2-pi5-overlay.dts ../overlays/vc4-kms-v3d-pi5-overlay.dts,cma-512 > custom.dts
 cp custom.dts bcm2712-rpi-5-b.dts
@@ -90,12 +96,12 @@ sudo vi /etc/grub.d/40_custom_uuid ( add
 exec tail -n +3 $0
 
 menuentry "Boot from UUID" {
-    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 355397da-45b4-4021-884d-28aba378eaba
-    echo    'Loading Linux 6.13.1-v8-16k+ ...'
-    linux /boot/vmlinuz-6.13.1-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
+    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 21d25638-5eb8-41ac-bf17-2630055fe7a0
+    echo    'Loading Linux 6.16.0-v8-16k+ ...'
+    linux /boot/vmlinuz-6.16.0-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
     echo    'Loading initial ramdisk ...'
-    initrd /boot/initrd.img-6.13.1-v8-16k+
-    devicetree /boot/dtbs/6.13.1-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb
+    initrd /boot/initrd.img-6.16.0-v8-16k+
+    devicetree /boot/dtbs/6.16.0-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb
 }
 )
 
@@ -106,13 +112,34 @@ sudo chmod +x /etc/grub.d/40_custom_uuid
 sudo vi /etc/default/grub ( change GRUB_DEFAULT=0 to GRUB_DEFAULT="Boot from UUID" )
 sudo update-grub  ( generate grub.cfg )
 sync
-sudo reboot
+sudo shutdown -h now
 
+Plugin USB2 SATA SSD to PC.
+sudo mount /dev/sda2 /mnt
+cp ./packages/firmware-brcm80211_20250410-2_all.deb /mnt/home/linaro
+sudo cp ./packages/brcmfmac43455* /mnt/lib/firmware/brcm/
+sudo cp ./packages/BCM4345C0* /mnt/lib/firmware/brcm/
+sudo mkdir /mnt/lib/firmware/rtl_bt
+sudo cp ./packages/rtl* /mnt/lib/firmware/rtl_bt/
+sync
+sudo umount /mnt
+Eject USB2 SATA SSD from PC.
+
+Plugin USB2 SATA SSD to rpi5. Remove wifi usb dongle. Power on rpi5.
 uname -a
 lsb_release -a
-sudo cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+
+Check CPU speed:
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+
+Check fan:
+cat /proc/device-tree/cooling_fan/status
+cat /sys/class/thermal/cooling_device0/type
+
 Check if Debian is running UEFI mode:
 ls /sys/firmware/efi
+
+Install mesa 24:
 sudo vi /etc/apt/sources.list ( add
 deb http://archive.raspberrypi.org/debian bookworm main
 )
@@ -122,6 +149,9 @@ mv /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d
 exit
 sudo apt update
 sudo apt upgrade -y
+sudo apt remove orca -y
+sudo reboot
+
 sudo apt install git zip rfkill speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc firefox-esr vlc vlc-plugin-video-output
 
 speedtest-cli --secure
@@ -137,11 +167,12 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan.mp4
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=mp4]' 3qrKjywjo7Q -o swan.mp4
 mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
 grep Using mpv.log
 cvlc --gl=wgl --glconv=any swan.mp4
 
+Plugin ASUS USB-BT500 bluetooth usb dongle to rpi5.
 sudo rfkill list
 hciconfig hci0
 hcitool dev

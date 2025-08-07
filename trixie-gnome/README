@@ -1,0 +1,79 @@
+Build trixie-gnome sdcard for raspberrypi5:
+
+Input files: ../rootfs-trixie/linaro-esp.img
+             ../rootfs-trixie/linaro-rootfs.img
+
+cd ~/Downloads
+wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
+
+cd ~/build-raspberrypi5/trixie-gnome
+
+Plugin sdcard/USB2-SATA-SSD to PC.
+sudo ./mksdcardimg.sh
+sudo mount /dev/sda1 /mnt
+cd /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
+cd ~/build-raspberrypi5/trixie-gnome
+sync
+sudo umount /mnt
+Eject sdcard/USB2-SATA-SSD from PC.
+
+Plugin sdcard/USB2-SATA-SSD to rpi5.
+Login:
+Username: linaro
+Password: linaro
+Setup wifi. Disable power saving, auto suspend and screen saver.
+sudo systemctl start ssh.service
+sudo systemctl enable ssh.service
+uname -a
+lsb_release -a
+sudo ifconfig
+sudo dpkg-reconfigure tzdata
+sudo dpkg-reconfigure locales
+date
+sudo apt update
+sudo apt upgrade
+sync
+
+Check CPU speed:
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+
+Check fan:
+cat /proc/device-tree/cooling_fan/status
+cat /sys/class/thermal/cooling_device0/type
+
+glxinfo | grep OpenGL
+dpkg -l | grep mesa
+date
+Check if Debian is running UEFI mode:
+ls /sys/firmware/efi
+Check display mode: ( wayland or x11 )
+echo $XDG_SESSION_TYPE
+Check audio driver: ( pulseaudio or pipewire )
+pactl info
+
+sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc firefox-esr vlc vlc-plugin-video-output
+
+speedtest-cli --secure
+
+glmark2-es2-wayland
+
+aplay -l
+pavucontrol  ( select card 0 as default )
+
+firefox -> youtube.com -> search YmDNhi07_Ho
+
+git clone https://github.com/yt-dlp/yt-dlp.git
+cd yt-dlp
+make
+cd ../
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=mp4]' 3qrKjywjo7Q -o swan.mp4
+mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
+grep Using mpv.log
+cvlc --gl=wgl --glconv=any swan.mp4
+
+Plugin ASUS USB-BT500 bluetooth usb dongle to rpi5.
+sudo rfkill list
+sudo hciconfig hci0
+hcitool dev
+hciconfig -a

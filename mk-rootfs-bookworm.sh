@@ -109,9 +109,9 @@ update-grub
 chmod o+x /usr/lib/dbus-1.0/dbus-daemon-launch-helper
 chmod +x /etc/rc.local
 
-dpkg -i /packages/rpiwifi/firmware-brcm80211_20250410-2_all.deb
-cp /packages/rpiwifi/BCM4345C0.hcd /lib/firmware/brcm/BCM4345C0.raspberrypi,5-model-b.hcd
-cp /packages/rpiwifi/BCM4345C0.hcd /lib/firmware/brcm/
+# dpkg -i /packages/rpiwifi/firmware-brcm80211_20250410-2_all.deb
+cp /packages/rpiwifi/BCM4345C0* /lib/firmware/brcm/
+cp /packages/rpiwifi/brcmfmac43455* /lib/firmware/brcm/
 cp /packages/rtlbt/rtl8761bu* /lib/firmware/rtl_bt/
 apt-get install -f -y
 

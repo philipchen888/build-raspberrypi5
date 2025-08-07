@@ -7,5 +7,5 @@ menuentry "Boot from UUID" {
     linux /boot/vmlinuz-6.14.0-rc2-v8-16k root=LABEL=rootfs rw rootwait video=HDMI-A-1:1920x1080@60
     echo    'Loading initial ramdisk ...'
     initrd /boot/initrd.img-6.14.0-rc2-v8-16k
-    devicetree /boot/dtb/broadcom/bcm2712-rpi-5-b.dtb
+    devicetree /boot/dtb/broadcom/bcm2712-rpi-5-b-ovl-rp1.dtb
 }

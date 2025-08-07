@@ -38,13 +38,13 @@ Eject USB2 SATA ssd from PC.
 
 ------------------------------------------------------------------------
 Install ubuntu from USB2 flash drive ubuntu iso to empty USB2 SATA ssd.
+NOTE: If on board fan is not turned on, use external fan.
+      To minimize EMI interference, put USB2 sata ssd to rpi5 bottom USB2 socket,
+      put wifi dongle to rpi5 top USB3 socket, put keyboard mouse to rpi5 bottom
+      USB3 socket with USB2 extention cable.
 ------------------------------------------------------------------------
 
 Plugin sdcard, USB2 flash drive and USB2 SATA ssd to rpi5. Plugin USB wifi dongle to rpi5. Power on rpi5.
-
-------------------------------------------------------------------------
-NOTE: If on board fan is not turned on, use external fan.
-------------------------------------------------------------------------
 
 Select install
 Double click Install Ubuntu LTS icon.
@@ -101,7 +101,7 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan.mp4
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=mp4]' 3qrKjywjo7Q -o swan.mp4
 mpv swan.mp4
 
 sudo rfkill list
