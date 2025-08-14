@@ -144,8 +144,7 @@ sudo vi /etc/apt/sources.list ( add
 deb http://archive.raspberrypi.org/debian bookworm main
 )
 su -
-wget https://archive.raspberrypi.org/debian/raspberrypi.gpg.key -O - | apt-key add -
-mv /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d
+wget https://archive.raspberrypi.org/debian/raspberrypi.gpg.key -O - | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/raspberrypi5-keys.gpg > /dev/null
 exit
 sudo apt update
 sudo apt upgrade -y
@@ -167,7 +166,7 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=mp4]' 3qrKjywjo7Q -o swan.mp4
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4
 mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
 grep Using mpv.log
 cvlc --gl=wgl --glconv=any swan.mp4

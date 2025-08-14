@@ -1,7 +1,8 @@
 Build ubuntu-uefi sdcard image for raspberrypi5:
 
 cd ~/Downloads
-wget https://cdimage.ubuntu.com/releases/25.04/release/ubuntu-25.04-desktop-arm64.iso
+wget https://cdimage.ubuntu.com/releases/plucky/release/ubuntu-25.04-desktop-arm64.iso
+wget https://cdimage.ubuntu.com/releases/noble/release/ubuntu-24.04.3-desktop-arm64.iso
 wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
 
 cd ~/build-raspberrypi5/ubuntu-uefi
@@ -56,24 +57,17 @@ Remove USB2 flash drive from rpi5.
 Login:
 Username: linaro
 Password: linaro
-Disable power saving and screen saver.
+Disable power saving, auto suspend and screen saver.
+sudo apt install net-tools openssh-server pulseaudio-utils
+sudo ifconfig
 uname -a
 lsb_release -a
-sudo ifconfig
 sudo dpkg-reconfigure tzdata
 sudo dpkg-reconfigure locales
-sudo apt install net-tools openssh-server pulseaudio-utils
 date
 sudo apt update
 sudo apt upgrade
 sudo apt dist-upgrade
-sudo vi /etc/systemd/logind.conf ( change to follows:
-HandlePowerKey=ignore
-HandleRebootKey=ignore
-HandleSuspendKey=ignore
-HandleHibernateKey=ignore
-HandleLidSwitch=ignore
-)
 sync
 sudo shutdown -h now
 Power off, power on
@@ -93,23 +87,10 @@ speedtest-cli --secure
 glmark2-es2-wayland
 
 aplay -l
-pavucontrol  ( select card 0 as default )
-
-firefox -> youtube.com -> search YmDNhi07_Ho
-
-git clone https://github.com/yt-dlp/yt-dlp.git
-cd yt-dlp
-make
-cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=mp4]' 3qrKjywjo7Q -o swan.mp4
-mpv swan.mp4
 
 sudo rfkill list
-hciconfig hci0
-hcitool dev
-hciconfig -a
 
-rpi5 fan, sound, wifi, ethernet and bluetooth are not supported in mainline kernel 6.14.0-27-generic ( It could be because mainline kernel 6.14 cannot support dtoverlay )
+mainline kernel 6.14.0-27-generic cannot support rpi5 fan, sound, wifi, ethernet and bluetooth.
 
 -------------------------------------------------------------
 Compile vendor's kernel 6.16.0-v8-16k+ with ovmerge
@@ -121,7 +102,13 @@ git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.16.y
 vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
 
 Install ovmerge from  https://github.com/raspberrypi/utils
-cd ./linux/arch/arm64/boot/dts/broadcom
+git clone https://github.com/raspberrypi/utils.git
+cd utils
+cmake .
+make
+sudo make install
+which ovmerge
+cd ../linux/arch/arm64/boot/dts/broadcom
 
 To enable fan:
 vi bcm2712-rpi-5-b.dts ( search fan: cooling_fan change disabled to okay, search &rp1_pwm1 change disabled to okay )
@@ -146,7 +133,7 @@ sudo vi /etc/grub.d/40_custom_uuid ( add
 exec tail -n +3 $0
 
 menuentry "Boot from UUID" {
-    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 749d3790-119b-4c65-aa65-4229cccafe22
+    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 037eb4f6-fe09-4882-acb6-79f75587eddc
     echo    'Loading Linux 6.16.0-v8-16k+ ...'
     linux /boot/vmlinux-6.16.0-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
     echo    'Loading initial ramdisk ...'
@@ -174,7 +161,7 @@ sync
 sudo umount /mnt
 Eject USB2 SATA SSD from PC.
 
-Plugin USB2 SATA SSD to rpi5. Remove wifi usb dongle. Plugin ethernet cable to rpi5. Power on rpi5.
+Plugin USB2 SATA SSD to rpi5. Remove wifi usb dongle. Plugin ethernet to rpi5. Power on rpi5.
 uname -a
 lsb_release -a
 sudo dpkg -i firmware-brcm80211_20250410-2_all.deb
@@ -182,7 +169,10 @@ sync
 sudo shutdown -h now
 
 Remove ethernet cable. Power on rpi5.
-Setup wifi.
+Setup wifi. ( forget connection first )
+sudo ifconfig
+uname -a
+lsb_release -a
 
 Check CPU speed:
 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
@@ -205,6 +195,11 @@ pavucontrol  ( select hdmi as default )
 
 firefox -> youtube.com -> search YmDNhi07_Ho
 
+git clone https://github.com/yt-dlp/yt-dlp.git
+cd yt-dlp
+make
+cd ../
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4
 mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
 grep Using mpv.log
 cvlc --gl=wgl --glconv=any swan.mp4

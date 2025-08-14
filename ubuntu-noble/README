@@ -32,13 +32,6 @@ date
 sudo apt update
 sudo apt upgrade
 sudo apt dist-upgrade
-sudo vi /etc/systemd/logind.conf ( change to follows:
-HandlePowerKey=ignore
-HandleRebootKey=ignore
-HandleSuspendKey=ignore
-HandleHibernateKey=ignore
-HandleLidSwitch=ignore
-)
 sync
 sudo shutdown -h now
 Power off, power on
@@ -77,7 +70,7 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=mp4]' 3qrKjywjo7Q -o swan.mp4
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4
 mpv swan.mp4
 cvlc --gl=wgl --glconv=any swan.mp4
 

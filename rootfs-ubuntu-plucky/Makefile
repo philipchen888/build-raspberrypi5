@@ -48,10 +48,10 @@ buildrootfs:
 	sudo lb build
 
 postbuild:
-	ARCH=arm64 $(PWD)/../mk-rootfs-ubuntu-noble.sh
+	ARCH=arm64 $(PWD)/../mk-rootfs-ubuntu-plucky.sh
 
 mkimage:
 	$(PWD)/../mk-image.sh
 
 mkespimage:
-	$(PWD)/../mk-ubuntuespimage.sh
+	$(PWD)/../mk-pluckyespimage.sh

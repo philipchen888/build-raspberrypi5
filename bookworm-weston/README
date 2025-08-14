@@ -77,7 +77,7 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=mp4]' 3qrKjywjo7Q -o swan.mp4
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4
 mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
 grep Using mpv.log
 cvlc --gl=wgl --glconv=any swan.mp4
