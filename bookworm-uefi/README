@@ -11,12 +11,8 @@ sudo ./mksdcardimg.sh
 sudo mkfs.vfat /dev/sda1
 sudo fdisk -l /dev/sda
 sudo mount -t vfat /dev/sda1 /mnt
-cd /mnt
-sudo 7z x ~/Downloads/debian-12.11.0-arm64-netinst.iso
-sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-cd ~/build-raspberrypi5/bookworm-uefi
-sync
-sudo umount /mnt
+sudo 7z x ~/Downloads/debian-12.11.0-arm64-netinst.iso -o/mnt && sync
+sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip -o/mnt && sync && sudo umount /mnt
 Eject USB2 SATA ssd from PC.
 
 ------------------------------------------------------------------------
@@ -36,13 +32,15 @@ User name: linaro
 Disable power saving, turn off auto suspend and screen saver.
 su -
 usermod -aG adm,sudo,video linaro
+sync
 shutdown -h now
 
 Power on rpi5.
-sudo apt install openssh-server net-tools
+sudo apt install openssh-server net-tools pulseaudio-utils
+sudo ifconfig
 uname -a
 lsb_release -a
-sudo apt update; sudo apt upgrade; sudo apt install pulseaudio-utils;
+sudo apt update; sudo apt upgrade -y;
 Check if Debian is running UEFI mode:
 ls /sys/firmware/efi
 Check display mode: ( wayland or x11 )
@@ -59,19 +57,25 @@ glmark2-es2
 aplay -l
 sudo rfkill list
 
-mainline kernel 6.1.0-37-arm64 doesn't support rpi5 fan, sound, bluetooth, wifi, ethernet.
+mainline kernel 6.1.0-38-arm64 doesn't support rpi5 fan, sound, bluetooth, wifi, ethernet.
 
 -------------------------------------------------------------
-Compile vendor's kernel 6.16.0-v8-16k+ with ovmerge
+Compile vendor's kernel 6.17.0-rc3-v8-16k+ with ovmerge
 -------------------------------------------------------------
 
 sudo apt install git cmake device-tree-compiler libfdt-dev build-essential libncurses-dev bison flex libssl-dev libelf-dev fakeroot
 
-git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.16.y
+git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.17.y
 vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
 
 Install ovmerge from  https://github.com/raspberrypi/utils
-cd ./linux/arch/arm64/boot/dts/broadcom
+git clone https://github.com/raspberrypi/utils.git
+cd utils
+cmake .
+make
+sudo make install
+which ovmerge
+cd ../linux/arch/arm64/boot/dts/broadcom
 
 To enable fan:
 vi bcm2712-rpi-5-b.dts ( search fan: cooling_fan change disabled to okay, search &rp1_pwm1 change disabled to okay )
@@ -88,6 +92,7 @@ sudo make ARCH=arm64 install
 
 cd ../
 ls -la /boot
+df .
 sudo e2label /dev/sda2 rootfs
 sudo blkid /dev/sda2   ( look for LABEL and UUID )
 
@@ -96,12 +101,12 @@ sudo vi /etc/grub.d/40_custom_uuid ( add
 exec tail -n +3 $0
 
 menuentry "Boot from UUID" {
-    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 21d25638-5eb8-41ac-bf17-2630055fe7a0
-    echo    'Loading Linux 6.16.0-v8-16k+ ...'
-    linux /boot/vmlinuz-6.16.0-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
+    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 4d2b4645-9913-418f-98d7-a4ab168e65fe
+    echo    'Loading Linux 6.17.0-rc3-v8-16k+ ...'
+    linux /boot/vmlinuz-6.17.0-rc3-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
     echo    'Loading initial ramdisk ...'
-    initrd /boot/initrd.img-6.16.0-v8-16k+
-    devicetree /boot/dtbs/6.16.0-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb
+    initrd /boot/initrd.img-6.17.0-rc3-v8-16k+
+    devicetree /boot/dtbs/6.17.0-rc3-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb
 }
 )
 
@@ -116,7 +121,6 @@ sudo shutdown -h now
 
 Plugin USB2 SATA SSD to PC.
 sudo mount /dev/sda2 /mnt
-cp ./packages/firmware-brcm80211_20250410-2_all.deb /mnt/home/linaro
 sudo cp ./packages/brcmfmac43455* /mnt/lib/firmware/brcm/
 sudo cp ./packages/BCM4345C0* /mnt/lib/firmware/brcm/
 sudo mkdir /mnt/lib/firmware/rtl_bt
@@ -126,6 +130,8 @@ sudo umount /mnt
 Eject USB2 SATA SSD from PC.
 
 Plugin USB2 SATA SSD to rpi5. Remove wifi usb dongle. Power on rpi5.
+Forget wifi. Setup wifi.
+sudo ifconfig
 uname -a
 lsb_release -a
 
@@ -149,6 +155,7 @@ exit
 sudo apt update
 sudo apt upgrade -y
 sudo apt remove orca -y
+sync
 sudo reboot
 
 sudo apt install git zip rfkill speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc firefox-esr vlc vlc-plugin-video-output
@@ -166,9 +173,10 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4
-mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
-grep Using mpv.log
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan-temp.mp4 --merge-output-format mp4 && ffmpeg -hide_banner -loglevel error -i swan-temp.mp4 -c:v libx265 -pix_fmt yuv420p -crf 28 -preset faster -c:a copy swan.mp4   ( It may take 15 minutes )
+
+mpv --hwdec=auto-copy swan.mp4
+ffplay swan.mp4
 cvlc --gl=wgl --glconv=any swan.mp4
 
 Plugin ASUS USB-BT500 bluetooth usb dongle to rpi5.
@@ -176,4 +184,3 @@ sudo rfkill list
 hciconfig hci0
 hcitool dev
 hciconfig -a
-

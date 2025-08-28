@@ -11,11 +11,7 @@ cd ~/build-raspberrypi5/trixie-gnome
 Plugin sdcard/USB2-SATA-SSD to PC.
 sudo ./mksdcardimg.sh
 sudo mount /dev/sda1 /mnt
-cd /mnt
-sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-cd ~/build-raspberrypi5/trixie-gnome
-sync
-sudo umount /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip -o/mnt && sync && sudo umount /mnt
 Eject sdcard/USB2-SATA-SSD from PC.
 
 Plugin sdcard/USB2-SATA-SSD to rpi5.
@@ -34,7 +30,7 @@ date
 sudo apt update
 sudo apt upgrade
 sync
-
+free
 Check CPU speed:
 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
 
@@ -67,13 +63,14 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4
-mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
-grep Using mpv.log
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan-temp.mp4 --merge-output-format mp4 && ffmpeg -hide_banner -loglevel error -i swan-temp.mp4 -c:v libx265 -pix_fmt yuv420p -crf 28 -preset faster -c:a copy swan.mp4   ( It may take 15 minutes )
+
+mpv --hwdec=auto-copy swan.mp4
+ffplay swan.mp4
 cvlc --gl=wgl --glconv=any swan.mp4
 
 Plugin ASUS USB-BT500 bluetooth usb dongle to rpi5.
 sudo rfkill list
-sudo hciconfig hci0
+hciconfig hci0
 hcitool dev
 hciconfig -a

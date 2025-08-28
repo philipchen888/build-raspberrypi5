@@ -1,10 +1,16 @@
 Compile vendor's kernel:
 
-git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.16.y
+git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.17.y
 vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
 
 Install ovmerge from  https://github.com/raspberrypi/utils
-cd ./linux/arch/arm64/boot/dts/broadcom
+git clone https://github.com/raspberrypi/utils.git
+cd utils
+cmake .
+make
+sudo make install
+which ovmerge
+cd ../linux/arch/arm64/boot/dts/broadcom
 
 To enable fan and disable bluetooth:
 vi bcm2712-rpi-5-b.dts ( search fan: cooling_fan change disabled to okay, search &rp1_pwm1 change disabled to okay )

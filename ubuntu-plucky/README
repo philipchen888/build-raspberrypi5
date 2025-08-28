@@ -11,11 +11,7 @@ cd ~/build-raspberrypi5/ubuntu-plucky
 Plugin sdcard/USB2-SATA-SSD to PC.
 sudo ./mksdcardimg.sh
 sudo mount /dev/sda1 /mnt
-cd /mnt
-sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-cd ~/build-raspberrypi5/ubuntu-plucky
-sync
-sudo umount /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip -o/mnt && sync && sudo umount /mnt
 Eject sdcard/USB2-SATA-SSD from PC.
 
 Plugin sdcard/USB2-SATA-SSD to rpi5.
@@ -33,6 +29,7 @@ sudo apt update
 sudo apt upgrade
 sudo apt dist-upgrade
 sync
+free
 sudo shutdown -h now
 Power off, power on
 
@@ -62,7 +59,7 @@ aplay -l
 pavucontrol  ( select hdmi as default )
 
 sudo add-apt-repository ppa:mozillateam/ppa
-sudo apt update
+sudo apt update; sudo apt upgrade -y;
 sudo apt install firefox
 firefox -> youtube.com -> search YmDNhi07_Ho
 
@@ -70,12 +67,14 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4
-mpv swan.mp4
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan-temp.mp4 --merge-output-format mp4 && ffmpeg -hide_banner -loglevel error -i swan-temp.mp4 -c:v libx265 -pix_fmt yuv420p -crf 28 -preset faster -c:a copy swan.mp4   ( It may take 15 minutes )
+
+mpv --hwdec=auto-copy swan.mp4
+ffplay swan.mp4
 cvlc --gl=wgl --glconv=any swan.mp4
 
 Plugin ASUS USB-BT500 bluetooth usb dongle to rpi5.
 sudo rfkill list
-sudo hciconfig hci0
+hciconfig hci0
 hcitool dev
 hciconfig -a
