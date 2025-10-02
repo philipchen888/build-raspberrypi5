@@ -63,9 +63,13 @@ sudo mount -o bind /dev/pts $TARGET_ROOTFS_DIR/dev/pts
 
 cat << EOF | sudo chroot $TARGET_ROOTFS_DIR
 
-rm -rf /etc/resolv.conf
-echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf
+rm -f /etc/resolvconf/resolv.conf.d/head
+echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" | tee /etc/resolvconf/resolv.conf.d/head >/dev/null
+rm -f /etc/resolv.conf
+ln -s /run/resolvconf/resolv.conf /etc/resolv.conf
 resolvconf -u
+cat /etc/resolv.conf
+
 apt-get update
 apt-get upgrade -y
 apt-get install -y build-essential git wget grub-efi-arm64 e2fsprogs zstd initramfs-tools

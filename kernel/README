@@ -20,7 +20,5 @@ To enable i2c, spi, uart2 and vc4:
 ovmerge -c -p bcm2712-rpi-5-b.dts,i2c1=on,i2c_arm=on,spi=on ../overlays/uart2-pi5-overlay.dts ../overlays/vc4-kms-v3d-pi5-overlay.dts,cma-512 > custom.dts
 cp custom.dts bcm2712-rpi-5-b.dts
 cd ../../../../../../
-\rm -rf out; mkdir out;
 
 make kernel
-The result is in ./out/boot.img
