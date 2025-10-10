@@ -1,14 +1,16 @@
 Build buildroot sdcard image for raspberrypi5:
 
-wget https://buildroot.org/downloads/buildroot-2024.11.tar.gz
-tar -xzf buildroot-2024.11.tar.gz
-mv buildroot-2024.11 buildroot
-cp ./patches/rpi5_defconfig ./buildroot/configs
-cp ./patches/config_5.txt ./buildroot/board/raspberrypi5/
+wget https://buildroot.org/downloads/buildroot-2025.08.tar.gz
+tar -xzf buildroot-2025.08.tar.gz
+mv buildroot-2025.08 buildroot
+vi ./buildroot/configs/raspberrypi5_defconfig ( delete KERNEL, delete BR2_DOWNLOAD_FORCE_CHECK_HASHES=y, append ./patches/rpi5_defconfig )
+cp ./patches/raspberrypi5/config_5.txt ./buildroot/board/raspberrypi5/
+cp ./patches/raspberrypi5/cmdline_5.txt ./buildroot/board/raspberrypi5/
 cd buildroot
-\rm .config
+\rm -rf .config output
 make clean
-make rpi5_defconfig
+make raspberrypi5_defconfig
+make linux
 make
 
 The result is in ./output/images/sdcard.img
@@ -16,29 +18,32 @@ The result is in ./output/images/sdcard.img
 sudo dd if=./output/images/sdcard.img of=/dev/sda bs=4096 conv=notrunc,fsync
 
 sudo mount /dev/sda2 /mnt
+sudo vi /mnt/etc/network/interfaces ( delete everything after iface lo inet loopback )
 sudo vi /mnt/etc/vsftpd.conf ( anonymous_enable=NO, local_enable=YES, write_enable=YES )
-sync
-sudo umount /mnt
+sync; sudo umount /mnt;
 Eject sdcard.
 
-plugin sdcard to SBC
+plugin sdcard to rpi5.
 login:
 username: root
 password: linaro
 
-wpa_passphrase your_SSID your_passphrase > /etc/ssid.conf
+uname -a
+
+adduser linaro
+
+wpa_passphrase your_SSID your_passphrase > /etc/ssid.conf ( delete password in ssid.conf )
 wpa_supplicant -B -i wlan0 -c /etc/ssid.conf
 dhcpcd wlan0
 ifconfig
-
-adduser linaro
 
 date
 aplay -l
 
 aplay /home/linaro/yoursong.wav
-mpg123 -a hw:0,0 /home/linaro/yoursong.mp3
+mpv --no-video /home/linaro/yoursong.mp3
 
-hciconfig hci0 up
-hciconfig -a
+bluetoothctl list
+hciconfig hci0
 hcitool dev
+hciconfig -a
