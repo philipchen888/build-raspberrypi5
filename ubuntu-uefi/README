@@ -1,7 +1,7 @@
 Build ubuntu-uefi sdcard image for raspberrypi5:
 
 cd ~/Downloads
-wget https://cdimage.ubuntu.com/releases/plucky/release/ubuntu-25.04-desktop-arm64.iso
+wget https://cdimage.ubuntu.com/releases/plucky/release/ubuntu-25.04-latest-desktop-arm64.iso
 wget https://cdimage.ubuntu.com/releases/noble/release/ubuntu-24.04.3-desktop-arm64.iso
 wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
 
@@ -15,13 +15,13 @@ sudo mount -t vfat /dev/sda1 /mnt
 sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip -o/mnt && sync && sudo umount /mnt
 Eject sdcard from PC.
 
-Plugin USB2 flash drive to PC.
+Plugin usb3 stick to PC.
 sudo ./mksdcardimg.sh
 sudo mkfs.vfat /dev/sda1
 sudo fdisk -l /dev/sda
 sudo mount -t vfat /dev/sda1 /mnt
-sudo 7z x ~/Downloads/ubuntu-25.04-desktop-arm64.iso -o/mnt && sync && sudo umount /mnt
-Eject USB2 flash drive from PC.
+sudo 7z x ~/Downloads/ubuntu-25.04-latest-desktop-arm64.iso -o/mnt && sync && sudo umount /mnt
+Eject usb3 stick from PC.
 
 Plugin USB2 SATA ssd to PC.
 sudo ./mksatassd.sh
@@ -30,14 +30,14 @@ sudo fdisk -l /dev/sda
 Eject USB2 SATA ssd from PC.
 
 ------------------------------------------------------------------------
-Install ubuntu from USB2 flash drive ubuntu iso to empty USB2 SATA ssd.
+Install ubuntu from usb3 stick ubuntu iso to empty USB2 SATA ssd.
 NOTE: If on board fan is not turned on, use external fan.
       To minimize EMI interference, put USB2 sata ssd to rpi5 bottom USB2 socket,
       put wifi dongle to rpi5 top USB3 socket, put keyboard mouse to rpi5 bottom
       USB3 socket with USB2 extention cable.
 ------------------------------------------------------------------------
 
-Plugin sdcard, USB2 flash drive and USB2 SATA ssd to rpi5. Plugin USB wifi dongle to rpi5. Power on rpi5.
+Plugin sdcard, usb3 stick and USB2 SATA ssd to rpi5. Plugin USB wifi dongle to rpi5. Power on rpi5.
 
 Select install
 Double click Install Ubuntu LTS icon.
@@ -45,7 +45,7 @@ Erase disk and install Ubuntu.
 Click Install now.
 Contine till finished. Restart.
 
-Remove USB2 flash drive from rpi5.
+Remove usb3 stick from rpi5.
 Login:
 Username: linaro
 Password: linaro
@@ -62,8 +62,7 @@ sudo apt upgrade
 sudo apt dist-upgrade
 sync
 free
-sudo shutdown -h now
-Power off, power on
+
 glxinfo | grep OpenGL
 date
 Check if Ubuntu is running UEFI mode:
@@ -83,15 +82,15 @@ aplay -l
 
 sudo rfkill list
 
-mainline kernel 6.14.0-29-generic cannot support rpi5 fan, sound, wifi, ethernet and bluetooth.
+mainline kernel 6.14.0-33-generic cannot support rpi5 fan, sound, wifi, ethernet and bluetooth.
 
 -------------------------------------------------------------
-Compile vendor's kernel 6.17.0-rc3-v8-16k+ with ovmerge
+Compile vendor's kernel 6.18.0-rc1-v8-16k+ with ovmerge
 -------------------------------------------------------------
 
 sudo apt install git cmake device-tree-compiler libfdt-dev build-essential libncurses-dev bison flex libssl-dev libelf-dev fakeroot
 
-git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.17.y
+git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.18.y
 vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
 
 Install ovmerge from  https://github.com/raspberrypi/utils
@@ -127,12 +126,12 @@ sudo vi /etc/grub.d/40_custom_uuid ( add
 exec tail -n +3 $0
 
 menuentry "Boot from UUID" {
-    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 800d4093-29bd-4cb9-b8c5-b224b8d2aa0c
-    echo    'Loading Linux 6.17.0-rc3-v8-16k+ ...'
-    linux /boot/vmlinux-6.17.0-rc3-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
+    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' e4bdc779-84f4-432c-b26a-ed7a37b9c8d3
+    echo    'Loading Linux 6.18.0-rc1-v8-16k+ ...'
+    linux /boot/vmlinux-6.18.0-rc1-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
     echo    'Loading initial ramdisk ...'
-    initrd /boot/initrd.img-6.17.0-rc3-v8-16k+
-    devicetree /boot/dtbs/6.17.0-rc3-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb
+    initrd /boot/initrd.img-6.18.0-rc1-v8-16k+
+    devicetree /boot/dtbs/6.18.0-rc1-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb
 }
 )
 
@@ -194,7 +193,7 @@ git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan-temp.mp4 --merge-output-format mp4 && ffmpeg -hide_banner -loglevel error -i swan-temp.mp4 -c:v libx265 -pix_fmt yuv420p -crf 28 -preset faster -c:a copy swan.mp4   ( It may take 15 minutes )
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan-temp.mp4 --merge-output-format mp4 && ffmpeg -hide_banner -loglevel error -i swan-temp.mp4 -c:v libx265 -pix_fmt yuv420p -crf 28 -preset faster -c:a copy swan.mp4   ( It may take 10 minutes )
 
 mpv --hwdec=auto-copy swan.mp4
 ffplay swan.mp4
