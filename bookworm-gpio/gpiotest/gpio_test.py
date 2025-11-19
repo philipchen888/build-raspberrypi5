@@ -8,6 +8,7 @@ import time
 import sys
 import spidev
 import smbus
+import gpiod
 
 pwm_period = 0.0
 port = "/dev/ttyAMA2"
@@ -19,8 +20,8 @@ DISPLAY_RGB_ADDR = 0x62
 DISPLAY_TEXT_ADDR = 0x3e
 
 spi = spidev.SpiDev()
-led = 595 
-switch = 594 
+# led = 154
+# switch = 156
 
 def readLine(port):
     s = ""
@@ -72,34 +73,134 @@ def closepin(pinnum):
     with open('/sys/class/gpio/unexport', 'w') as f:
         f.write(str(pinnum))
 
+def check_pwm_already_exported():
+    path = '/sys/class/pwm/pwmchip0/pwm1'
+    isdir = os.path.isdir(path)
+    return isdir
+
+def pwm_open():
+    if not check_pwm_already_exported():
+        os.system('sudo echo 1 > /sys/class/pwm/pwmchip0/export')
+
+def pwm_polarity():
+    os.system('sudo echo "normal" > /sys/class/pwm/pwmchip0/pwm1/polarity')
+
+def pwm_enable():
+    os.system('sudo echo 1 > /sys/class/pwm/pwmchip0/pwm1/enable')
+
+def pwm_stop():
+    os.system('sudo echo 0 > /sys/class/pwm/pwmchip0/pwm1/enable')
+
+def pwm_close():
+    os.system('sudo echo 1 > /sys/class/pwm/pwmchip0/unexport')
+ 
+def pwm_freq(freq):
+    global pwm_period
+    pwm_period = 1000000000.0 / freq
+    os.system('sudo echo ' + str(int(pwm_period)) + ' > /sys/class/pwm/pwmchip0/pwm1/period')
+
+def pwm_duty(duty):
+    dutycycle = duty * int(pwm_period)
+    os.system('sudo echo ' + str(int(dutycycle)) + ' > /sys/class/pwm/pwmchip0/pwm1/duty_cycle')
+
+chip = gpiod.Chip("gpiochip0")
+
+# LED (global 536 -> offset 24) as output
+led = chip.get_line(24)
+led.request(consumer="gpio_test", type=gpiod.LINE_REQ_DIR_OUT)
+
+# Switch (global 535 -> offset 23) as input
+switch = chip.get_line(23)
+switch.request(consumer="gpio_test", type=gpiod.LINE_REQ_DIR_IN)
+
 def led_test():
-    initpin(led, 'out')
     for i in range(5):
-        setpin(led, 1)
+        led.set_value(1)
         time.sleep(0.5)
-        setpin(led, 0)
+        led.set_value(0)
         time.sleep(0.5)
-    closepin(led)
 
 def button_test():
     print ("Push button 10 times.\r\n")
-    initpin(led, 'out')
-    initpin(switch, 'in')
     old_state = 0
     current_state = 0
     i = 0
     while i < 10:
-        current_state = getpin(switch)
+        current_state = switch.get_value()
         if old_state == 0 and current_state == 1:
-            setpin(led, 1)
+            led.set_value(1)
             old_state = current_state
         elif old_state == 1 and current_state == 0:
-            setpin(led, 0)
+            led.set_value(0)
             old_state = current_state
             i += 1
         time.sleep(0.05)
-    closepin(led)
-    closepin(switch)
+
+def pwm_led_test():
+    pwm_open()
+    pwm_freq(60)
+    pwm_duty(0)
+    pwm_polarity()
+    pwm_enable()
+
+    for i in range(0,10):
+        for x in range(0,101,5):
+            pwm_duty(x/100.0)
+            time.sleep(0.03)
+        for x in range(100,-1,-5):
+            pwm_duty(x/100.0)
+            time.sleep(0.03)
+
+    pwm_stop()
+    pwm_close()
+
+def tone (note, duration):
+    if note == 0:
+       time.sleep(duration)
+       time.sleep(duration * 0.2)
+    else:
+       pwm_freq(note)
+       pwm_duty(0.5)
+       pwm_polarity()
+       pwm_enable()
+       time.sleep(duration)
+       pwm_stop()
+       time.sleep(duration * 0.2)
+
+def tongsong():
+    melody = [262, 196, 196, 220, 196, 0, 247, 262]
+    noteDurations = [4, 8, 8, 4, 4, 4, 4, 4]
+    thisNote = 0
+    pwm_open()
+    while thisNote < 8:
+        noteDuration = 1.0 / noteDurations[thisNote];
+        tone(melody[thisNote], noteDuration)
+        thisNote = thisNote + 1
+    pwm_close()
+
+def servo():
+    pwm_open()
+    pwm_freq(50)
+    pwm_duty(0.05)              # min 0.05, max 0.15 180 degrees
+    pwm_polarity()
+    pwm_enable()
+
+    for i in range(0,3):
+        pwm_duty(0.05)
+        print("0 degree")
+        time.sleep(1.0)
+        pwm_duty(0.075)
+        print("45 degree")
+        time.sleep(1.0)
+        pwm_duty(0.1)
+        print("90 degree")
+        time.sleep(1.0)
+        pwm_duty(0.075)
+        print("45 degree")
+        time.sleep(1.0)
+
+    pwm_stop()
+    pwm_close()
 
 # I2C LCD
 # set backlight to (R,G,B) (values from 0..255 for each)
@@ -137,13 +238,10 @@ def setText(text):
         bus.write_byte_data(DISPLAY_TEXT_ADDR,0x40,ord(c))
 
 def i2c_lcd_test():
-    print ("Raspberry pi i2c test\r\n")
-    #textCommand(0x01) # clear display
-    #time.sleep(.05)
+    textCommand(0x01) # clear display
+    time.sleep(.05)
     textCommand(0x08 | 0x04) # display on, no cursor
     textCommand(0x28) # 2 lines
-    time.sleep(.05)
-    textCommand(0x01) # clear display
     time.sleep(.05)
 
     for i in range(0,5):
@@ -265,12 +363,12 @@ font7x14 = [
 ]
 
 def ssd1306_init():
-    setpin(led, 0)
+    led.set_value(0)
     myData = [0xa8, 0x3f, 0xd3, 0x0, 0x40, 0xa0, 0xc0, 0xda, 0x2, 0x81, 0x7f, 0xa4, 0xa6, 0xd5, 0x80, 0x8d, 0x14, 0xaf]
     spi.writebytes( myData )
 
 def set_col_addr( col_start, col_end ):
-    setpin(led, 0)
+    led.set_value(0)
     D0 = 0x21
     D1 = col_start & 0x7f
     D2 = col_end & 0x7f
@@ -278,7 +376,7 @@ def set_col_addr( col_start, col_end ):
     spi.writebytes( myData )
 
 def set_page_addr( page_start, page_end ):
-    setpin(led, 0)
+    led.set_value(0)
     D0 = 0x22
     D1 = page_start & 0x3
     D2 = page_end & 0x3
@@ -286,17 +384,17 @@ def set_page_addr( page_start, page_end ):
     spi.writebytes( myData )
 
 def set_horizontal_mode():
-    setpin(led, 0)
+    led.set_value(0)
     myData = [0x20, 0x00]
     spi.writebytes( myData )
 
 def set_start_page( page ):
-    setpin(led, 0)
+    led.set_value(0)
     myData = 0xB0 | (page & 0x3)
     spi.writebytes( myData )
 
 def set_start_col( col ):
-    setpin(led, 0)
+    led.set_value(0)
     D0 = 0xf & col
     D1 = (0xf & (col >> 4)) | 0x10
     myData = [D0, D1]
@@ -305,7 +403,7 @@ def set_start_col( col ):
 def clearDisplay():
     set_col_addr( 0, 127 )
     set_page_addr( 0, 3 )
-    setpin(led, 1)
+    led.set_value(1)
     for j in range(4):
         for k in range(8):
             myData = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -330,7 +428,7 @@ def oledprintf( ch ):
           else:
               set_page_addr( 2, 3 )
           
-          setpin(led, 1)
+          led.set_value(1)
           spi.writebytes( mychar )
           start_col += 7
       else:
@@ -356,7 +454,7 @@ def oledascii():
             else:
                 set_page_addr( 2, 3 )
             
-            setpin(led, 1)
+            led.set_value(1)
             spi.writebytes( mychar )
             start_col += 7
             if start_col >= 112:
@@ -366,8 +464,7 @@ def oledascii():
         clearDisplay()
 
 def ssd1306_test():
-    initpin(led, 'out')
-    setpin(led, 1)
+    led.set_value(1)
     spi.open(0, 0)
     spi.max_speed_hz = 5000000
     ssd1306_init()
@@ -377,7 +474,7 @@ def ssd1306_test():
     set_col_addr( 0, 127 )
     set_page_addr( 0, 3 )
   
-    setpin(led, 1)
+    led.set_value(1)
     for j in range(4):
         i = 0
         while i < 128:
@@ -392,11 +489,10 @@ def ssd1306_test():
     clearDisplay()
     oledprintf( "This is a test !\nIt works !\n" )
     spi.close()
-    closepin(led)
 
 item = ""
 while item != 'q':
-    item = input("-- select a test --\r\n1. uart test\r\n2. led test\r\n3. button test\r\n4. i2c lcd test\r\n5. spi oled test\r\nq. quit\r\n")
+    item = input("-- select a test --\r\n1. uart test\r\n2. led test\r\n3. button test\r\n4. pwm led test\r\n5. i2c lcd test\r\n6. tongsong\r\n7. servo\r\n8. spi oled test\r\nq. quit\r\n")
     if item == '1':
         uart_test(port)
     elif item == '2':
@@ -404,8 +500,14 @@ while item != 'q':
     elif item == '3':
         button_test()
     elif item == '4':
-        i2c_lcd_test()
+        pwm_led_test()
     elif item == '5':
+        i2c_lcd_test()
+    elif item == '6':
+        tongsong()
+    elif item == '7':
+        servo()
+    elif item == '8':
         ssd1306_test()
     elif item == 'q':
         print ("Goodbye!")
