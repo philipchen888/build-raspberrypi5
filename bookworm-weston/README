@@ -3,19 +3,12 @@ Build bookworm-weston sdcard for raspberrypi5:
 Input files: ../rootfs-weston/linaro-esp.img
              ../rootfs-weston/linaro-rootfs.img
 
-cd ~/Downloads
-wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
-
 cd ~/build-raspberrypi5/bookworm-weston
 
-Plugin sdcard/USB2-SATA-SSD to PC.
+Plugin sdcard/usb3 stick to PC.
 sudo ./mksdcardimg.sh
 sudo mount /dev/sda1 /mnt
-cd /mnt
-sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-cd ~/build-raspberrypi5/bookworm-weston
-sync
-sudo umount /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
 sudo mount /dev/sda2 /mnt
 mkdir -p /mnt/home/linaro/.config
 vi /mnt/home/linaro/.config/weston.ini ( add
@@ -25,11 +18,10 @@ idle-time=0
 [shell]
 locking=false
 )
-sync
-sudo umount /mnt
-Eject sdcard/USB2-SATA-SSD from PC.
+sync; sudo umount /mnt;
+Eject sdcard/usb3 stick from PC.
 
-Plugin sdcard/USB2-SATA-SSD to rpi5.
+Plugin sdcard/usb3 stick to rpi5.
 Login:
 Username: linaro
 Password: linaro
@@ -44,6 +36,7 @@ date
 sudo apt update
 sudo apt upgrade
 sync
+free
 sudo shutdown -h now
 
 Power off, Power on rpi5.
@@ -64,7 +57,7 @@ echo $XDG_SESSION_TYPE
 Check audio driver: ( pulseaudio or pipewire )
 pactl info
 
-sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc firefox-esr vlc vlc-plugin-video-output
+sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc firefox-esr vlc vlc-plugin-video-output vsftpd
 
 speedtest-cli --secure
 
@@ -75,13 +68,16 @@ pavucontrol  ( select card 0 as default )
 
 firefox -> youtube.com -> search YmDNhi07_Ho
 
+Do follows on PC, then ftp swan.mp4 to rpi5.
+(
 git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
 make
 cd ../
-~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4
-mpv --hwdec=auto-copy --log-file=mpv.log swan.mp4
-grep Using mpv.log
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]' 3qrKjywjo7Q -o swan.mp4 --postprocessor-args " -c:v libx265 -b:v 2M -c:a copy"
+)
+
+mpv --hwdec=auto-copy swan.mp4
 cvlc --gl=wgl --glconv=any swan.mp4
 
 Plugin ASUS USB-BT500 bluetooth usb dongle to rpi5.

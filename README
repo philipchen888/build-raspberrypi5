@@ -4,10 +4,14 @@ Parts needed:
 1. Raspberry pi 5.
 2. Sandisk 64GB SATA SSD with USB cable.
 3. Sandisk 64GB micro sdcard.
-4. Host PC with ubuntu 24.
-5. ASUS USB-BT500 bluetooth usb dongle.
+4. usb3 stick.
+5. Host PC with ubuntu 24.
+6. ASUS USB-BT500 bluetooth usb dongle.
 
 Note: If keyboard/mouse USB dongle interfere with USB2-SATA-SSD, put keyboard/mouse USB dongle in USB3 socket with USB extension cord, put USB2-SATA-SSD in USB2 socket.
+
+Note: Compile ubuntu-noble and ubuntu-plucky using lb version 3.0~a57-1.
+      Compile debian using lb version 20250505
 
 Steps to build raspberrypi5 sdcard image:
 
@@ -15,6 +19,10 @@ Steps to build raspberrypi5 sdcard image:
    sudo apt update
    sudo apt upgrade
    sudo apt-get install build-essential git libssl-dev nmap net-tools libncurses5-dev libncursesw5-dev dnsutils vsftpd ftp binfmt-support qemu-user-static scons libncurses5-dev libncursesw5-dev libdbus-glib-1-dev libbluetooth-dev python3-dev python3-pip python3-setuptools libcurl4-openssl-dev gettext dbus-x11 chrpath diffstat gawk texinfo curl flex bison device-tree-compiler swig libmpc-dev debootstrap debhelper kpartx gdisk devscripts isolinux po4a libgnutls28-dev mtools python-is-python3 python3-pyelftools gcc-aarch64-linux-gnu
+
+   cd ~/Downloads
+   wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
+   mv RPi5_UEFI_Release_v0.3.zip RPi5_UEFI_Release.zip
 
 2. Install live-build:
    sudo apt-get install debootstrap debhelper kpartx gdisk devscripts isolinux po4a live-build
@@ -29,7 +37,7 @@ Steps to build raspberrypi5 sdcard image:
    lb --version ( 20250505 /usr/bin/lb ) 
 
 3. cd ~/build-raspberrypi5/kernel ( Compile vendor's kernel )
-   git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.17.y
+   git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.18.y
    vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
    Use ovmerge to change bcm2712-rpi-5-b.dts to include some dtoverlay ( uart2, vc4, i2c, spi etc.).
 
@@ -61,25 +69,17 @@ Steps to build raspberrypi5 sdcard image:
    make clean
 
 9. cd ~/build-raspberrypi5/bookworm-gnome  ( Build debian bookworm gnome-desktop image )
-   Plugin sdcard/USB2-SATA-SSD to PC.
+   Plugin sdcard/usb3 stick to PC.
    sudo ./mksdcardimg.sh
    sudo mount /dev/sda1 /mnt
-   cd /mnt
-   sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-   cd ~/build-raspberrypi5/bookworm-gnome
-   sync
-   sudo umount /mnt
-   Eject sdcard/USB2-SATA-SSD from PC.
+   sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
+   Eject sdcard/usb3 stick from PC.
 
 10. cd ~/build-raspberrypi5/bookworm-weston ( Build debian bookworm weston-desktop image )
-    Plugin sdcard/USB2-SATA-SSD to PC.
+    Plugin sdcard/usb3 stick to PC.
     sudo ./mksdcardimg.sh
     sudo mount /dev/sda1 /mnt
-    cd /mnt
-    sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-    cd ~/build-raspberrypi5/bookworm-weston
-    sync
-    sudo umount /mnt
+    sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
     sudo mount /dev/sda2 /mnt
     mkdir -p /mnt/home/linaro/.config
     vi /mnt/home/linaro/.config/weston.ini ( add
@@ -89,42 +89,29 @@ Steps to build raspberrypi5 sdcard image:
     [shell]
     locking=false
     )
-    sync
-    sudo umount /mnt
-    Eject sdcard/USB2-SATA-SSD from PC.
+    sync; sudo umount /mnt;
+    Eject sdcard/usb3 stick from PC.
 
 11. cd ~/build-raspberrypi5/trixie-gnome  ( Build debian trixie gnome-desktop image )
-    Plugin sdcard/USB2-SATA-SSD to PC.
+    Plugin sdcard/usb3 stick to PC.
     sudo ./mksdcardimg.sh
     sudo mount /dev/sda1 /mnt
-    cd /mnt
-    sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-    cd ~/build-raspberrypi5/trxie-gnome
-    sync
-    sudo umount /mnt
-    Eject sdcard/USB2-SATA-SSD from PC.
+    sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
+    Eject sdcard/usb3 stick from PC.
 
 12. cd ~/build-raspberrypi5/ubuntu-noble    ( Build ubuntu-noble image )
-    Plugin sdcard/USB2-SATA-SSD to PC.
+    Plugin sdcard/usb3 stick to PC.
     sudo ./mksdcardimg.sh
     sudo mount /dev/sda1 /mnt
-    cd /mnt
-    sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-    cd ~/build-raspberrypi5/ubuntu-noble
-    sync
-    sudo umount /mnt
-    Eject sdcard/USB2-SATA-SSD from PC.
+    sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
+    Eject sdcard/usb3 stick from PC.
 
 13. cd ~/build-raspberrypi5/ubuntu-plucky    ( Build ubuntu-plucky image )
-    Plugin sdcard/USB2-SATA-SSD to PC.
+    Plugin sdcard/usb3 stick to PC.
     sudo ./mksdcardimg.sh
     sudo mount /dev/sda1 /mnt
-    cd /mnt
-    sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip
-    cd ~/build-raspberrypi5/ubuntu-plucky
-    sync
-    sudo umount /mnt
-    Eject sdcard/USB2-SATA-SSD from PC.
+    sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
+    Eject sdcard/usb3 stick from PC.
 
 14. cd ~/build-raspberrypi5/fedora           ( Build fedora image )
 

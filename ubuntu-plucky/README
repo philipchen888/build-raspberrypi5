@@ -3,18 +3,15 @@ Build ubuntu-plucky sdcard for raspberrypi5:
 Input files: ../rootfs-ubuntu-plucky/linaro-esp.img
              ../rootfs-ubuntu-plucky/linaro-rootfs.img
 
-cd ~/Downloads
-wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
-
 cd ~/build-raspberrypi5/ubuntu-plucky
 
-Plugin sdcard/USB2-SATA-SSD to PC.
+Plugin sdcard/usb3 stick to PC.
 sudo ./mksdcardimg.sh
 sudo mount /dev/sda1 /mnt
-sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip -o/mnt && sync && sudo umount /mnt
-Eject sdcard/USB2-SATA-SSD from PC.
+sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
+Eject sdcard/usb3 stick from PC.
 
-Plugin sdcard/USB2-SATA-SSD to rpi5.
+Plugin sdcard/usb3 stick to rpi5.
 Login:
 Username: linaro
 Password: linaro

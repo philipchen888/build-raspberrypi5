@@ -2,43 +2,48 @@ Build ubuntu-uefi sdcard image for raspberrypi5:
 
 cd ~/Downloads
 wget https://cdimage.ubuntu.com/releases/25.10/release/ubuntu-25.10-desktop-arm64.iso
-wget https://github.com/worproject/rpi5-uefi/releases/download/v0.3/RPi5_UEFI_Release_v0.3.zip
 
 cd ~/build-raspberrypi5/ubuntu-uefi
+
+Plugin usb3 stick to PC.
+sudo ./eraseusb3stick.sh
+sudo mkfs.ext4 /dev/sda1
+sudo fdisk -l /dev/sda
+Eject usb3 stick from PC.
 
 Plugin sdcard to PC.
 sudo ./mkuefiboot.sh
 sudo mkfs.vfat /dev/sda1
 sudo fdisk -l /dev/sda
 sudo mount /dev/sda1 /mnt
-sudo 7z x ~/Downloads/RPi5_UEFI_Release_v0.3.zip -o/mnt && sync && sudo umount /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
 Eject sdcard from PC.
 
-Plugin usb3 stick to PC.
+Plugin USB2 SATA ssd to PC.
 sudo ./mksdcardimg.sh
 sudo mkfs.vfat /dev/sda1
 sudo fdisk -l /dev/sda
 sudo mount /dev/sda1 /mnt
 sudo 7z x ~/Downloads/ubuntu-25.10-desktop-arm64.iso -o/mnt && sync && sudo umount /mnt
-Eject usb3 stick from PC.
+Eject USB2 SATA ssd from PC.
 
 ------------------------------------------------------------------------
-Install ubuntu from usb3 stick ubuntu iso to sdcard.
+Install ubuntu from USB2 SATA ssd ubuntu iso to usb3 stick.
 NOTE: If on board fan is not turned on, use external fan.
-      To minimize EMI interference, put usb3 stick to rpi5 bottom USB2 socket,
-      put wifi dongle to rpi5 top USB3 socket, put keyboard mouse to rpi5 bottom
-      USB3 socket with USB2 extention cable.
+      To minimize EMI interference, put usb3 stick to rpi5 top USB3 socket,
+      Put keyboard mouse to rpi5 bottom USB2 socket with USB2 extention cable.
+      Put USB2 SATA ssd to rpi5 top USB2 socket.
 ------------------------------------------------------------------------
 
-Plugin sdcard, usb3 stick and USB wifi dongle to rpi5. Power on rpi5.
+Plugin sdcard, usb3 stick, USB2 SATA ssd and wifi usb dongle to rpi5. Power on rpi5.
 
 Select install
 Double click Install Ubuntu LTS icon.
-Manule install, mmcblk0 boot device, click space + mount /, and install Ubuntu.
+Erase and install Ubuntu.
 Click Install now.
 Contine till finished. Restart.
 
-Remove usb3 stick from rpi5.
+Remove USB2 SATA ssd from rpi5.
 Login:
 Username: linaro
 Password: linaro
@@ -50,11 +55,25 @@ lsb_release -a
 sudo dpkg-reconfigure tzdata
 sudo dpkg-reconfigure locales
 date
-sudo apt update
-sudo apt upgrade
-sudo apt dist-upgrade
+sudo apt update; sudo apt upgrade -y; sudo apt dist-upgrade -y;
 sync
 free
+sudo shutdown -h now
+
+Plugin usb3 stick to PC.
+sudo mount /dev/sda2 /mnt
+cp ./packages/firmware-brcm80211_20250410-2_all.deb /mnt/home/linaro
+sudo cp ./packages/brcmfmac43455* /mnt/lib/firmware/brcm/
+sudo cp ./packages/BCM4345C0* /mnt/lib/firmware/brcm/
+sudo cp ./packages/rtl* /mnt/lib/firmware/rtl_bt/
+sync; sudo umount /mnt;
+Eject usb3 stick from PC.
+
+Plugin usb3 stick and wifi usb dongle to rpi5. Power on rpi5.
+uname -a
+lsb_release -a
+sudo dpkg -i firmware-brcm80211_20250410-2_all.deb
+sync
 
 glxinfo | grep OpenGL
 date
@@ -65,66 +84,45 @@ echo $XDG_SESSION_TYPE
 Check audio driver: ( pulseaudio or pipewire )
 pactl info
 
-sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc vlc vlc-plugin-video-output pavucontrol git
+sudo apt install speedtest-cli python3-pip python3-setuptools pavucontrol rfkill
 
 speedtest-cli --secure
-
-glmark2-es2-wayland
 
 aplay -l
 
 sudo rfkill list
 
 mainline kernel 6.17.0-6-generic cannot support rpi5 fan, sound, wifi, ethernet and bluetooth.
+sudo shutdown -h now
 
 -------------------------------------------------------------
-Compile vendor's kernel 6.18.0-rc1-v8-16k+ with ovmerge
+Compile vendor's kernel 6.18.y
 -------------------------------------------------------------
 
-sudo apt install git cmake device-tree-compiler libfdt-dev build-essential libncurses-dev bison flex libssl-dev libelf-dev fakeroot
+See ../kernel/README to compile vendor's kernel on PC. Then copy the resulting files to the Pi’s /boot and /lib/modules/.
+Plugin usb3 stick to PC.
+sudo cp -r ../kernel/linux/tmp/lib/modules/* /media/$USER/*/lib/modules
+sudo cp -r ../kernel/linux/tmp/boot/* /media/$USER/*/boot
+sync
+Umount, Eject usb3 stick from PC.
 
-git clone https://github.com/raspberrypi/linux --depth=1 -b rpi-6.17.y
-vi ./linux/arch/arm64/configs/bcm2712_defconfig ( delete CONFIG_CMDLINE, change CONFIG_I2C_CHARDEV=m to CONFIG_I2C_CHARDEV=y )
-
-Install ovmerge from  https://github.com/raspberrypi/utils
-git clone https://github.com/raspberrypi/utils.git
-cd utils
-cmake .
-make
-sudo make install
-which ovmerge
-cd ../linux/arch/arm64/boot/dts/broadcom
-
-To enable fan:
-vi bcm2712-rpi-5-b.dts ( search fan: cooling_fan change disabled to okay, search &rp1_pwm1 change disabled to okay )
-cp bcm2712-rpi-5-b.dts bcm2712-rpi-5-b.dts.org
-ovmerge -c -p bcm2712-rpi-5-b.dts,i2c1=on,i2c_arm=on,spi=on ../overlays/uart2-pi5-overlay.dts ../overlays/vc4-kms-v3d-pi5-overlay.dts,cma-512 > custom.dts
-cp custom.dts bcm2712-rpi-5-b.dts
-cd ~/linux
-sudo make mrproper
-make ARCH=arm64 bcm2712_defconfig
-make ARCH=arm64 all -j$(nproc)           ( this may take 2 hours to compile )
-sudo make ARCH=arm64 modules_install
-sudo make ARCH=arm64 dtbs_install
-sudo make ARCH=arm64 install             ( ignore errors )
-
-cd ../
+Boot rpi5 with old kernel.
 ls -la /boot
 df .
-sudo e2label /dev/mmcblk0p2 rootfs
-sudo blkid /dev/mmcblk0p2   ( look for LABEL and UUID )
+sudo e2label /dev/sda2 rootfs
+sudo blkid /dev/sda2   ( look for LABEL and UUID )
 
 sudo vi /etc/grub.d/40_custom_uuid ( add
 #!/bin/sh
 exec tail -n +3 $0
 
 menuentry "Boot from UUID" {
-    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 352e17fd-eb47-4882-bc5a-393c38958796
-    echo    'Loading Linux 6.17.6-v8-16k+ ...'
-    linux /boot/vmlinux-6.17.6-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
+    search --no-floppy --fs-uuid --set=root --hint='usb0,gpt2' --hint='mmcblk0,gpt2' --hint='mmcblk1,gpt2' 80f47dcb-0953-4bec-a800-725e2a683229
+    echo    'Loading Linux 6.18.0-rc5-v8-16k+ ...'
+    linux /boot/vmlinuz-6.18.0-rc5-v8-16k+ root=LABEL=rootfs rootwait rw video=HDMI-A-1:1920x1080@60
     echo    'Loading initial ramdisk ...'
-    initrd /boot/initrd.img-6.17.6-v8-16k+
-    devicetree /boot/dtbs/6.17.6-v8-16k+/broadcom/bcm2712-rpi-5-b.dtb
+    initrd /boot/initrd.img-6.18.0-rc5-v8-16k+
+    devicetree /boot/dtb/broadcom/bcm2712-rpi-5-b.dtb
 }
 )
 
@@ -134,19 +132,11 @@ sudo chmod +x /etc/grub.d/40_custom_uuid
 
 sudo vi /etc/default/grub ( change GRUB_DEFAULT=0 to GRUB_DEFAULT="Boot from UUID" )
 sudo update-grub  ( generate grub.cfg )
+sudo update-initramfs -c -k 6.18.0-rc5-v8-16k+
 sync
 sudo shutdown -h now
 
-Plugin sdcard to PC.
-sudo mount /dev/sda2 /mnt
-cp ./packages/firmware-brcm80211_20250410-2_all.deb /mnt/home/linaro
-sudo cp ./packages/brcmfmac43455* /mnt/lib/firmware/brcm/
-sudo cp ./packages/BCM4345C0* /mnt/lib/firmware/brcm/
-sudo cp ./packages/rtl* /mnt/lib/firmware/rtl_bt/
-sync; sudo umount /mnt;
-Eject sdcard from PC.
-
-Plugin sdcard to rpi5. Remove wifi usb dongle. Plugin ethernet to rpi5. Power on rpi5.
+Plugin usb3 stick and ethernet cable to rpi5. Remove wifi usb dongle from rpi5. Power on rpi5.
 sudo ifconfig
 uname -a
 lsb_release -a
@@ -154,7 +144,7 @@ sudo dpkg -i firmware-brcm80211_20250410-2_all.deb
 sync
 sudo shutdown -h now
 
-Remove ethernet cable. Power on rpi5.
+Remove ethernet cable from rpi5. Power on rpi5.
 Forget wifi. Setup wifi.
 sudo ifconfig
 uname -a
@@ -170,7 +160,7 @@ cat /sys/class/thermal/cooling_device0/type
 Check if Ubuntu is running UEFI mode:
 ls /sys/firmware/efi
 
-sudo apt install git zip rfkill speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc vlc vlc-plugin-video-output pavucontrol vsftpd
+sudo apt install git zip rfkill speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc vlc vlc-plugin-video-output vsftpd
 
 speedtest-cli --secure
 
