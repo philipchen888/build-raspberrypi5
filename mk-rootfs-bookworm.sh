@@ -46,7 +46,7 @@ export KERNEL_VERSION=$(ls $TARGET_ROOTFS_DIR/boot/vmlinuz-* 2>/dev/null | sed '
 echo $KERNEL_VERSION
 sudo sed -e "s/6.16.0-rc7-v8-16k+/$KERNEL_VERSION/g" < ../kernel/patches/40_custom_uuid | sudo tee $TARGET_ROOTFS_DIR/boot/40_custom_uuid > /dev/null
 cat $TARGET_ROOTFS_DIR/boot/40_custom_uuid
-wget https://archive.raspberrypi.org/debian/raspberrypi.gpg.key -O - | gpg --dearmor | sudo tee $TARGET_ROOTFS_DIR/etc/apt/trusted.gpg.d/raspberrypi5-keys.gpg > /dev/null
+# wget https://archive.raspberrypi.org/debian/raspberrypi.gpg.key -O - | gpg --dearmor | sudo tee $TARGET_ROOTFS_DIR/etc/apt/trusted.gpg.d/raspberrypi5-keys.gpg > /dev/null
 
 # overlay folder
 sudo cp -rf ../overlay/* $TARGET_ROOTFS_DIR/
@@ -72,10 +72,19 @@ resolvconf -u
 cat /etc/resolv.conf
 
 # Install mesa 24
-echo -e "deb http://archive.raspberrypi.org/debian bookworm main" >> /etc/apt/sources.list
+# echo -e "deb http://archive.raspberrypi.org/debian bookworm main" >> /etc/apt/sources.list
 apt-get update
 apt-get upgrade -y
-apt-get install -y build-essential git wget v4l-utils grub-efi-arm64 e2fsprogs zstd initramfs-tools mesa-vulkan-drivers
+# apt-get install -y build-essential git wget v4l-utils grub-efi-arm64 e2fsprogs zstd initramfs-tools mesa-vulkan-drivers
+apt-get install -y build-essential git wget v4l-utils grub-efi-arm64 e2fsprogs zstd initramfs-tools
+
+# Install mesa 25
+export DEBIAN_FRONTEND=noninteractive
+echo "deb http://deb.debian.org/debian bookworm-backports main" > /etc/apt/sources.list.d/backports.list
+apt update
+apt install -t bookworm-backports -y --no-install-recommends \
+    mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri libglx-mesa0 libegl-mesa0 libgbm1 libgles2-mesa
+ldconfig
 
 ls -la /boot/firmware
 rm -rf /boot/firmware
