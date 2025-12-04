@@ -49,14 +49,15 @@ set menu_color_normal=white/black
 set menu_color_highlight=white/green
 
 menuentry "Boot UUID" {
-    search --no-floppy --fs-uuid --set=root be996f5e-35b7-4cae-8e7e-fc9f65ba065f
-    echo    'Loading Linux 6.18.0-rc7-v8-16k+ ...'
-    linux /boot/vmlinuz-6.18.0-rc7-v8-16k+ root=LABEL=rootfs rootwait rw rootdelay=10
+    search --no-floppy --fs-uuid --set=root e028bb00-9e9c-4341-8a70-1246fe140edf
+    echo    'Loading Linux 6.18.0-v8-16k+ ...'
+    linux /boot/vmlinuz-6.18.0-v8-16k+ root=LABEL=rootfs rootwait rw rootdelay=10
     echo    'Loading initial ramdisk ...'
     initrd /boot/initrd.img-6.12.57+deb13-arm64
     devicetree /boot/dtb/broadcom/bcm2712-rpi-5-b.dtb
 }
 )
+Note: update above UUID accordingly.
 sudo vi /mnt/etc/fstab ( change UUID for /boot/efi )
 sudo cp ./packages/brcmfmac43455* /mnt/lib/firmware/brcm/
 sudo cp ./packages/BCM4345C0* /mnt/lib/firmware/brcm/
@@ -82,7 +83,7 @@ sync
 free
 sudo update-initramfs -u -k $(uname -r)
 sudo vi /boot/grub/grub.cfg ( change to:
-   initrd /boot/initrd.img-6.18.0-rc7-v8-16k+
+   initrd /boot/initrd.img-6.18.0-v8-16k+
 )
 sync
 sudo reboot

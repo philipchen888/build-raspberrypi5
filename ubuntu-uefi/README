@@ -1,5 +1,7 @@
 Build ubuntu-uefi sdcard image for raspberrypi5:
 
+Note: need to use external fan to cool CPU for installing ubuntu iso.
+
 Input files ../kernel/linux/tmp/lib/modules/
             ../kernel/linux/tmp/boot/
 
@@ -12,19 +14,12 @@ Plugin usb3 stick to PC.
 sudo ./eraseusb3stick.sh
 Eject usb3 stick from PC.
 
-Plugin sdcard to PC.
-sudo ./mkuefiboot.sh
-sudo mkfs.vfat /dev/sda1
-sudo fdisk -l /dev/sda
-sudo mount /dev/sda1 /mnt
-sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
-Eject sdcard from PC.
-
 Plugin USB2 SATA ssd to PC.
 sudo ./mksdcardimg.sh
 sudo mkfs.vfat /dev/sda1
 sudo fdisk -l /dev/sda
 sudo mount /dev/sda1 /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync
 sudo 7z x ~/Downloads/ubuntu-25.10-desktop-arm64.iso -o/mnt && sync && sudo umount /mnt
 Eject USB2 SATA ssd from PC.
 
@@ -33,7 +28,7 @@ Install ubuntu from USB2 SATA ssd ubuntu iso to usb3 stick.
 NOTE: If on board fan is not turned on, use external fan.
       To minimize EMI interference, put usb3 stick to rpi5 top USB3 socket,
       Put keyboard mouse to rpi5 bottom USB2 socket with USB2 extention cable.
-      Put USB2 SATA ssd to rpi5 top USB2 socket.
+      Put USB2 SATA ssd to rpi5 bottom USB3 socket.
 ------------------------------------------------------------------------
 
 Plugin sdcard, usb3 stick, USB2 SATA ssd and wifi usb dongle to rpi5. Power on rpi5.
@@ -44,9 +39,10 @@ Erase and install Ubuntu.
 Click Install now.
 Contine till finished. Restart. Remove USB2 SATA ssd from rpi5. click enter. Power down rpi5.
 
-
 Plugin usb3 stick to PC.
 sudo fdisk -l /dev/sda
+sudo mount /dev/sda1 /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
 sudo e2label /dev/sda2 rootfs
 sudo blkid /dev/sda1 ( write down UUID )
 sudo blkid /dev/sda2 ( write down UUID )
@@ -62,14 +58,15 @@ set menu_color_normal=white/black
 set menu_color_highlight=white/green
 
 menuentry "Boot UUID" {
-    search --no-floppy --fs-uuid --set=root 0c43f484-b72c-41ce-88d2-23d4c6297730
-    echo    'Loading Linux 6.18.0-rc7-v8-16k+ ...'
-    linux /boot/vmlinuz-6.18.0-rc7-v8-16k+ root=LABEL=rootfs rootwait rw rootdelay=10
+    search --no-floppy --fs-uuid --set=root 66686659-3df5-4d6e-9493-a141a21d8fcd
+    echo    'Loading Linux 6.18.0-v8-16k+ ...'
+    linux /boot/vmlinuz-6.18.0-v8-16k+ root=LABEL=rootfs rootwait rw rootdelay=10
     echo    'Loading initial ramdisk ...'
     initrd /boot/initrd.img-6.17.0-7-generic
     devicetree /boot/dtb/broadcom/bcm2712-rpi-5-b.dtb
 }
 )
+Note: update above UUID accordingly.
 sudo vi /mnt/etc/fstab ( change UUID for /boot/efi )
 sudo cp ./packages/firmware-brcm80211_20250410-2_all.deb /mnt/boot
 sudo cp ./packages/brcmfmac43455* /mnt/lib/firmware/brcm/
@@ -98,7 +95,7 @@ sync
 free
 sudo update-initramfs -u -k $(uname -r)
 sudo vi /boot/grub/grub.cfg ( change to:
-   initrd /boot/initrd.img-6.18.0-rc7-v8-16k+
+   initrd /boot/initrd.img-6.18.0-v8-16k+
 )
 sync
 sudo reboot
