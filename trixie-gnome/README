@@ -1,0 +1,77 @@
+Build trixie-gnome sdcard for raspberrypi5:
+
+Input files: ../rootfs-trixie/linaro-esp.img
+             ../rootfs-trixie/linaro-rootfs.img
+
+cd ~/build-raspberrypi5/trixie-gnome
+
+Plugin sdcard/usb3 stick to PC.
+sudo ./mksdcardimg.sh
+sudo mount /dev/sda1 /mnt
+sudo 7z x ~/Downloads/RPi5_UEFI_Release.zip -o/mnt && sync && sudo umount /mnt
+Eject sdcard/usb3 stick from PC.
+
+Plugin sdcard/usb3 stick to rpi5.
+Login:
+Username: linaro
+Password: linaro
+Setup wifi. Disable power saving, auto suspend and screen saver.
+sudo systemctl start ssh.service
+sudo systemctl enable ssh.service
+uname -a
+lsb_release -a
+sudo ifconfig
+sudo dpkg-reconfigure tzdata
+sudo dpkg-reconfigure locales
+date
+sudo apt update
+sudo apt upgrade
+sync
+free
+sudo shutdown -h now
+
+Power off, Power on rpi5.
+Check CPU speed:
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+
+Check rpi5 fan:
+cat /proc/device-tree/cooling_fan/status
+cat /sys/class/thermal/cooling_device0/type
+
+glxinfo | grep OpenGL
+dpkg -l | grep mesa
+date
+Check if Debian is running UEFI mode:
+ls /sys/firmware/efi
+Check display mode: ( wayland or x11 )
+echo $XDG_SESSION_TYPE
+Check audio driver: ( pulseaudio or pipewire )
+pactl info
+
+sudo apt install speedtest-cli python3-pip python3-setuptools ffmpeg mpv glmark2-es2-wayland pandoc firefox-esr vlc vlc-plugin-video-output vsftpd
+
+speedtest-cli --secure
+
+glmark2-es2-wayland
+
+aplay -l
+pavucontrol  ( select hdmi as default )
+
+firefox -> youtube.com -> search YmDNhi07_Ho
+
+Do follows on PC. Then ftp swan.mp4 to rpi5. (
+git clone https://github.com/yt-dlp/yt-dlp.git
+cd yt-dlp
+make
+cd ../
+~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4 --postprocessor-args " -c:v libx265 -b:v 2M -c:a copy"
+)
+
+mpv swan.mp4
+ffplay -autoexit swan.mp4
+
+Plugin ASUS USB-BT500 bluetooth usb dongle to rpi5.
+sudo rfkill list
+hciconfig hci0
+hcitool dev
+hciconfig -a
