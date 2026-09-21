@@ -11,7 +11,7 @@ Parts needed:
 Note: Compile ubuntu-noble, ubuntu-questing and ubuntu-resolute using lb version 3.0~a57-1.
       Compile debian using lb version 20250814
 
-Steps to build raspberrypi4b and raspberrypi5 sdcard image:
+Steps to build raspberrypi5 sdcard image:
 
 1. git clone https://github.com/philipchen888/build-raspberrypi5.git
    sudo apt update
