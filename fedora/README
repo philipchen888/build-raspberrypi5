@@ -75,6 +75,7 @@ sudo shutdown -h now
 
 Install vendor kernel:
 Plugin usb3 stick to PC.
+sudo blkid /dev/sda3 ( write down UUID )
 sudo mount /dev/sda2 /mnt
 mkdir tmp; cd tmp;
 sudo zstd -dc /mnt/initramfs-6.19.10-300.fc44.aarch64.img | sudo cpio -idmv
@@ -90,8 +91,9 @@ sudo vi /mnt/loader/entries/*aarch64.conf ( change to
 linux /Image
 initrd /initrd-patched.img
 devicetree /bcm2712-rpi-5-b.dtb
-delete options
+options root=UUID=12345678-abcd-1234-abcd-123456789abc ro rootflags=subvol=root rhgb
 )
+Note: change above UUID
 sync; sudo umount /mnt;
 sudo mount /dev/sda3 /mnt
 sudo cp -r ../kernel/linux/tmp/lib/modules/* /mnt/root/lib/modules
@@ -117,8 +119,6 @@ pavucontrol ( select hdmi0 as default )
 
 firefox -> youtube.com -> search YmDNhi07_Ho
 
-sudo dnf install pandoc v4l-utils
-
 Do follows on PC. Then ftp swan.mp4 to rpi5. (
 git clone https://github.com/yt-dlp/yt-dlp.git
 cd yt-dlp
@@ -127,9 +127,9 @@ cd ../
 ~/yt-dlp/yt-dlp -f 'bestvideo[ext=mp4][protocol=https]+bestaudio[ext=m4a][protocol=https]' 3qrKjywjo7Q -o swan.mp4 --postprocessor-args " -c:v libx264 -b:v 2M -c:a copy"
 )
 
-mpv --vo=gpu --hwdec=v4l2m2m swan.mp4
+mpv swan.mp4
 ffplay -autoexit swan.mp4
-(rpi5) cvlc --gl=wgl --glconv=any swan.mp4
+cvlc --gl=wgl --glconv=any swan.mp4
 
 Plugin ASUS BT500 bluetooth usb dongle to rpi5.
 sudo rfkill list
