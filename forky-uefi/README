@@ -4,7 +4,7 @@ Input files ../kernel/linux/tmp/lib/modules/
             ../kernel/linux/tmp/boot/
 
 cd ~/Downloads
-wget https://get.debian.org/cdimage/daily-builds/daily/current/arm64/iso-cd/debian-testing-arm64-netinst.iso
+wget https://cdimage.debian.org/cdimage/weekly-builds/arm64/iso-cd/debian-testing-arm64-netinst.iso
 
 cd ~/build-raspberrypi5/forky-uefi
 
@@ -49,10 +49,10 @@ set menu_color_highlight=white/green
 
 menuentry "Boot UUID" {
     search --no-floppy --fs-uuid --set=root 07ba8210-1fa3-49b9-aed9-08418969c7e2
-    echo    'Loading Linux 7.2.6-v8-16k+ ...'
-    linux /boot/vmlinuz-7.2.6-v8-16k+ root=LABEL=rootfs rootwait rw rootdelay=10 video=HDMI-A-1:1920x1080@60 console=serial0,115200 console=tty1
+    echo    'Loading Linux 7.2.7-v8-16k+ ...'
+    linux /boot/vmlinuz-7.2.7-v8-16k+ root=LABEL=rootfs rootwait rw rootdelay=10 video=HDMI-A-1:1920x1080@60 console=serial0,115200 console=tty1
     echo    'Loading initial ramdisk ...'
-    initrd /boot/initrd.img-7.1.13+deb14-arm64
+    initrd /boot/initrd.img-7.2.6+deb14-arm64
     devicetree /boot/dtb/broadcom/bcm2712-rpi-5-b.dtb
 }
 )
@@ -82,7 +82,7 @@ sync
 free
 sudo update-initramfs -u -k $(uname -r)
 sudo vi /boot/grub/grub.cfg ( change to:
-initrd /boot/initrd.img-7.2.6-v8-16k+
+initrd /boot/initrd.img-7.2.7-v8-16k+
 )
 sync
 sudo reboot
